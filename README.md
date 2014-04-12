@@ -37,7 +37,7 @@ ElasticBulkIndexWorker.perform_async({ delete: { _index: 'test', _id: 7, _type: 
 ...
 ```
 
-This jobs will be performed as a single job with the single argument containing:
+This jobs will be grouped into a single job which will be performed with the single argument containing:
 
 ```ruby
 [
