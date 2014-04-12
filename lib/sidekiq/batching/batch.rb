@@ -67,6 +67,10 @@ module Sidekiq
         end
       end
 
+      def delete
+        @redis.delete(@name)
+      end
+
       private
       def could_flush_on_overflow?
         worker_class_options['batch_size'] &&

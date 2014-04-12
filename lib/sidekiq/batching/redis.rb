@@ -46,6 +46,14 @@ module Sidekiq
         end
       end
 
+      def delete(name)
+        redis do |conn|
+          conn.del(ns("last_execution_time:#{name}"))
+          conn.del(ns(name))
+          conn.srem(ns('batches'), name)
+        end
+      end
+
       private
       def ns(key = nil)
         "batching:#{key}"
