@@ -47,11 +47,12 @@ describe Sidekiq::Batching::Batch do
     end
 
     it 'must flush if limit okay but time came' do
-      batch = subject.new(BatchedIntervalWorker.name, 'batched_both')
+      batch = subject.new(BatchedIntervalWorker.name, 'batched_interval')
 
       expect(batch.could_flush?).to be_false
       BatchedIntervalWorker.perform_async('bar')
       expect(batch.could_flush?).to be_false
+      expect(batch.size).to eq(1)
 
       Timecop.travel(2.hours.since)
 
@@ -67,6 +68,7 @@ describe Sidekiq::Batching::Batch do
       10.times { BatchedSizeWorker.perform_async('bar') }
       batch.flush
       expect(BatchedSizeWorker).to have_enqueued_job([["bar"], ["bar"], ["bar"]])
+      expect(batch.size).to eq(7)
     end
   end
 

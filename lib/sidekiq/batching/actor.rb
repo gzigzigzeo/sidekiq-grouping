@@ -26,9 +26,6 @@ module Sidekiq
         end
 
         flush(batches)
-
-      rescue Exception => e
-        puts e.message
       end
 
       def link_to_sidekiq_manager
@@ -38,7 +35,6 @@ module Sidekiq
         after(5) { link_to_sidekiq_manager }
       end
 
-      private
       def flush(batches)
         if batches.any?
           names = batches.map { |batch| "#{batch.worker_class} in #{batch.queue}" }

@@ -47,10 +47,24 @@ module Sidekiq
 
       def worker_class_options
         worker_class_constant.get_sidekiq_options
+      rescue NameError
+        {}
       end
 
       def could_flush?
         could_flush_on_overflow? || could_flush_on_time?
+      end
+
+      def last_execution_time
+        last_time = @redis.get_last_execution_time(@name)
+        Time.parse(last_time) if last_time
+      end
+
+      def next_execution_time
+        if interval = worker_class_options['batch_flush_interval']
+          last_time = last_execution_time
+          last_time + interval.seconds if last_time
+        end
       end
 
       private
@@ -60,17 +74,17 @@ module Sidekiq
       end
 
       def could_flush_on_time?
-        last_time = @redis.get_last_execution_time(@name)
-        last_time = Time.parse(last_time) if last_time
+        return false if size.zero?
 
-        interval = worker_class_options['batch_flush_interval']
+        last_time = last_execution_time
+        next_time = next_execution_time
 
-        if interval
-          if last_time.blank?
-            set_current_time_as_last
-            false
-          else
-            last_time + interval.seconds < Time.now
+        if last_time.blank?
+          set_current_time_as_last
+          false
+        else
+          if next_time
+            next_time < Time.now
           end
         end
       end

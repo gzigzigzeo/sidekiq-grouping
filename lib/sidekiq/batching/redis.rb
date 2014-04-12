@@ -20,7 +20,7 @@ module Sidekiq
         redis do |conn|
           result = conn.pipelined do
             conn.lrange(ns(name), 0, limit - 1)
-            conn.lrem(ns(name), 0, limit - 1)
+            conn.ltrim(ns(name), limit, -1)
           end
 
           result.first

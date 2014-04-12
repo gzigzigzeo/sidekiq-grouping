@@ -11,9 +11,10 @@
       <table class="table table-striped table-bordered table-white" style="width: 100%; margin: 0; table-layout:fixed;">
         <thead>
           <th style="width: 50%">Worker</th>
-          <th style="width: 10%">Queue</th>
-          <th style="width: 30%">Count</th>
-          <th style="width: 30%">Next flush</th>
+          <th style="width: 30%">Queue</th>
+          <th style="width: 10%">Count</th>
+          <th style="width: 30%">Last execution time</th>
+          <th style="width: 30%">Next enqueue</th>
           <th style="width: 10%">Actions</th>
         </thead>
         <% @batches.each do |batch| %>
@@ -21,8 +22,9 @@
           <td><%= batch.worker_class %></td>
           <td><%= batch.queue %></td>
           <td><%= batch.size %></td>
-          <td></td>
-          <td></td>
+          <td><%= batch.last_execution_time || "&ndash;"%></td>
+          <td><%= batch.next_execution_time || "&ndash;"%></td>
+          <td><input class="btn btn-danger btn-xs" type="submit" name="delete" value="Delete"/></td>
         </tr>
         <% end %>
       </table>
