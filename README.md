@@ -16,8 +16,8 @@ class ElasticBulkIndexWorker
 
   sidekiq_options(
     queue: :batched_by_size,
-    batch_size: 30,
-    batch_flush_interval: 30,
+    batch_size: 30,           # Jobs will be combined to groups of 30 items
+    batch_flush_interval: 60, # Combined jobs will be executed at least every 60 seconds
     retry: 5
   )
 
@@ -48,7 +48,7 @@ This jobs will be grouped into a single job which will be performed with the sin
 ]
 ```
 
-This will happen for every 30 jobs in a row or every 30 seconds.
+This will happen for every 30 jobs in a row or every 60 seconds.
 
 Add this line to your `config/routes.rb` to activate web UI:
 
