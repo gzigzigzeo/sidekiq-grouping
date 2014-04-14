@@ -33,6 +33,7 @@ module Sidekiq
       def flush
         chunk = pluck
         if chunk
+          set_current_time_as_last
           Sidekiq::Client.push(
             'class' => @worker_class,
             'queue' => @queue,
