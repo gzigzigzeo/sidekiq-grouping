@@ -2,11 +2,11 @@
 
 Allows identical sidekiq jobs to be processed with a single background call.
 
-Sponsored by [Evil Martians](http://evilmartians.com)
-
 Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
 * Periodical batch updating of recently changing database counters.
+
+Sponsored by [Evil Martians](http://evilmartians.com)
 
 ## Usage
 
