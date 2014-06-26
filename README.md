@@ -2,6 +2,8 @@
 
 Allows identical sidekiq jobs to be processed with a single background call.
 
+Sponsored by [Evil Martians](http://evilmartians.com)
+
 Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
 * Periodical batch updating of recently changing database counters.
@@ -49,6 +51,10 @@ This jobs will be grouped into a single job which will be performed with the sin
 ```
 
 This will happen for every 30 jobs in a row or every 60 seconds.
+
+## Web UI
+
+(web.png)
 
 Add this line to your `config/routes.rb` to activate web UI:
 
