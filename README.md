@@ -54,7 +54,7 @@ This will happen for every 30 jobs in a row or every 60 seconds.
 
 ## Web UI
 
-(web.png)
+![Web UI](web.png)
 
 Add this line to your `config/routes.rb` to activate web UI:
 
