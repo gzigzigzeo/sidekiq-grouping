@@ -12,7 +12,13 @@ module Sidekiq
       attr_reader :name, :worker_class, :queue
 
       def add(msg)
-        @redis.push_msg(@name, msg.to_json)
+        msg = msg.to_json
+        @redis.push_msg(@name, msg, enqueue_similar_once?) if should_add? msg
+      end
+
+      def should_add? msg
+        return true unless enqueue_similar_once?
+        !@redis.enqueued?(@name, msg)
       end
 
       def size
@@ -92,6 +98,10 @@ module Sidekiq
             next_time < Time.now
           end
         end
+      end
+
+      def enqueue_similar_once?
+        worker_class_options['batch_unique'] == true
       end
 
       def set_current_time_as_last
