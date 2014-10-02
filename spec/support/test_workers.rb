@@ -31,3 +31,12 @@ class BatchedBothWorker
   def perform(foo)
   end
 end
+
+class BatchedUniqueArgsWorker
+  include Sidekiq::Worker
+
+  sidekiq_options queue: :batched_unique_args, batch_size: 3, batch_unique: true
+
+  def perform(foo)
+  end
+end

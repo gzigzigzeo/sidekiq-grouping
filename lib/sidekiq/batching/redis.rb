@@ -1,10 +1,29 @@
 module Sidekiq
   module Batching
     class Redis
-      def push_msg(name, msg)
+
+      PLUCK_SCRIPT = <<-SCRIPT
+        local pluck_values = redis.call('lrange', KEYS[1], 0, ARGV[1] - 1)
+        redis.call('ltrim', KEYS[1], ARGV[1], -1)
+        for k, v in pairs(pluck_values) do
+          redis.call('srem', KEYS[2], v)
+        end
+        return pluck_values
+      SCRIPT
+
+      def push_msg(name, msg, remember_unique = false)
         redis do |conn|
-          conn.sadd(ns('batches'), name)
-          conn.rpush(ns(name), msg)
+          conn.multi do
+            conn.sadd(ns('batches'), name)
+            conn.rpush(ns(name), msg)
+            conn.sadd(unique_messages_key(name), msg) if remember_unique
+          end
+        end
+      end
+
+      def enqueued?(name, msg)
+        redis do |conn|
+          conn.sismember(unique_messages_key(name), msg)
         end
       end
 
@@ -17,14 +36,9 @@ module Sidekiq
       end
 
       def pluck(name, limit)
-        redis do |conn|
-          result = conn.pipelined do
-            conn.lrange(ns(name), 0, limit - 1)
-            conn.ltrim(ns(name), limit, -1)
-          end
-
-          result.first
-        end
+        keys = [ns(name), unique_messages_key(name)]
+        args = [limit]
+        redis { |conn| conn.eval PLUCK_SCRIPT, keys, args }
       end
 
       def get_last_execution_time(name)
@@ -55,6 +69,11 @@ module Sidekiq
       end
 
       private
+
+      def unique_messages_key name
+        ns("#{name}:unique_messages")
+      end
+
       def ns(key = nil)
         "batching:#{key}"
       end
