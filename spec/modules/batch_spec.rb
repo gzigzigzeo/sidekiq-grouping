@@ -29,34 +29,34 @@ describe Sidekiq::Batching::Batch do
     it 'must flush if limit exceeds for limit worker' do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       BatchedSizeWorker.perform_async('bar')
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       4.times { BatchedSizeWorker.perform_async('bar') }
-      expect(batch.could_flush?).to be_true
+      expect(batch.could_flush?).to be_truthy
     end
 
     it 'must flush if limit exceeds for both worker' do
       batch = subject.new(BatchedBothWorker.name, 'batched_both')
 
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       BatchedBothWorker.perform_async('bar')
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       4.times { BatchedBothWorker.perform_async('bar') }
-      expect(batch.could_flush?).to be_true
+      expect(batch.could_flush?).to be_truthy
     end
 
     it 'must flush if limit okay but time came' do
       batch = subject.new(BatchedIntervalWorker.name, 'batched_interval')
 
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       BatchedIntervalWorker.perform_async('bar')
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       expect(batch.size).to eq(1)
 
       Timecop.travel(2.hours.since)
 
-      expect(batch.could_flush?).to be_true
+      expect(batch.could_flush?).to be_truthy
     end
   end
 
@@ -64,7 +64,7 @@ describe Sidekiq::Batching::Batch do
     it 'must put wokrer to queue on flush' do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
-      expect(batch.could_flush?).to be_false
+      expect(batch.could_flush?).to be_falsy
       10.times { BatchedSizeWorker.perform_async('bar') }
       batch.flush
       expect(BatchedSizeWorker).to have_enqueued_job([["bar"], ["bar"], ["bar"]])
