@@ -26,4 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "timecop"
 
   spec.add_dependency "sidekiq"
+  spec.add_dependency "celluloid"
 end
