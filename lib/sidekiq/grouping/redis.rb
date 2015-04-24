@@ -1,5 +1,5 @@
 module Sidekiq
-  module Batching
+  module Grouping
     class Redis
 
       PLUCK_SCRIPT = <<-SCRIPT
@@ -54,7 +54,7 @@ module Sidekiq
           id = ns("lock:#{name}")
           conn.setnx(id, true).tap do |obtained|
             if obtained
-              conn.expire(id, Sidekiq::Batching::Config.lock_ttl)
+              conn.expire(id, Sidekiq::Grouping::Config.lock_ttl)
             end
           end
         end

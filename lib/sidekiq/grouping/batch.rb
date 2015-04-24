@@ -1,12 +1,12 @@
 module Sidekiq
-  module Batching
+  module Grouping
     class Batch
 
       def initialize(worker_class, queue, redis_pool = nil)
         @worker_class = worker_class
         @queue = queue
         @name = "#{worker_class.underscore}:#{queue}"
-        @redis = Sidekiq::Batching::Redis.new
+        @redis = Sidekiq::Grouping::Redis.new
       end
 
       attr_reader :name, :worker_class, :queue
@@ -27,7 +27,7 @@ module Sidekiq
 
       def chunk_size
         worker_class_options['batch_size'] ||
-        Sidekiq::Batching::Config.max_batch_size
+        Sidekiq::Grouping::Config.max_batch_size
       end
 
       def pluck
@@ -110,7 +110,7 @@ module Sidekiq
 
       class << self
         def all
-          redis = Sidekiq::Batching::Redis.new
+          redis = Sidekiq::Grouping::Redis.new
 
           redis.batches.map do |name|
             new(*extract_worker_klass_and_queue(name))

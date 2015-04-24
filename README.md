@@ -1,4 +1,6 @@
-# Sidekiq::Batching
+# Sidekiq::Grouping
+
+Lets you batch similar tasks to run them all as a single task.
 
 Allows identical sidekiq jobs to be processed with a single background call.
 
@@ -59,27 +61,27 @@ This will happen for every 30 jobs in a row or every 60 seconds.
 Add this line to your `config/routes.rb` to activate web UI:
 
 ```ruby
-require "sidekiq/batching/web"
+require "sidekiq/grouping/web"
 ```
 
 ## Configuration
 
 ```ruby
-Sidekiq::Batching::Config.poll_interval = 5     # Amount of time between polling batches
-Sidekiq::Batching::Config.max_batch_size = 5000 # Maximum batch size allowed
-Sidekiq::Batching::Config.lock_ttl = 1          # Timeout of lock set when batched job enqueues
+Sidekiq::Grouping::Config.poll_interval = 5     # Amount of time between polling batches
+Sidekiq::Grouping::Config.max_batch_size = 5000 # Maximum batch size allowed
+Sidekiq::Grouping::Config.lock_ttl = 1          # Timeout of lock set when batched job enqueues
 ```
 
-## Notes
+## TODO
 
-1. Did not tested with sidekiq 3.
-1. Does not support sidekiq 3 redis_pool option.
+1. Add support redis_pool option.
+2. Make able to work together with sidekiq-unique-jobs.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'sidekiq-batching'
+    gem 'sidekiq-grouping'
 
 And then execute:
 
@@ -87,11 +89,11 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install sidekiq-batching
+    $ gem install sidekiq-grouping
 
 ## Contributing
 
-1. Fork it ( http://github.com/gzigzigzeo/sidekiq-batching/fork )
+1. Fork it ( http://github.com/gzigzigzeo/sidekiq-grouping/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

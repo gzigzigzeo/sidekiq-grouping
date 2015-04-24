@@ -13,9 +13,9 @@ SimpleCov.start do
   add_filter 'spec'
 end
 
-require 'sidekiq/batching'
+require 'sidekiq/grouping'
 
-Sidekiq::Batching.logger = nil
+Sidekiq::Grouping.logger = nil
 Sidekiq.redis = { namespace: ENV['namespace'] }
 Sidekiq.logger = nil
 
@@ -25,7 +25,6 @@ end
 
 RSpec.configure do |config|
   config.order = :random
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 

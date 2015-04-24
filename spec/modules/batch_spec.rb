@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Sidekiq::Batching::Batch do
-  subject { Sidekiq::Batching::Batch }
+describe Sidekiq::Grouping::Batch do
+  subject { Sidekiq::Grouping::Batch }
 
   context 'adding' do
     it 'must enqueue unbatched worker' do

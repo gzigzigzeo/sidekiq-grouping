@@ -1,5 +1,5 @@
 module Sidekiq
-  module Batching
+  module Grouping
     module Config
       include ActiveSupport::Configurable
 

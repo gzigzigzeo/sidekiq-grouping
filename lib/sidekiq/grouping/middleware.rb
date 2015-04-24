@@ -1,5 +1,5 @@
 module Sidekiq
-  module Batching
+  module Grouping
     class Middleware
       def call(worker_class, msg, queue, redis_pool = nil)
         worker_class = worker_class.classify.constantize if worker_class.is_a?(String)
@@ -26,7 +26,7 @@ module Sidekiq
 
       private
       def add_to_batch(worker_class, queue, msg, redis_pool = nil)
-        Sidekiq::Batching::Batch.new(worker_class.name, queue, redis_pool).add(msg['args'])
+        Sidekiq::Grouping::Batch.new(worker_class.name, queue, redis_pool).add(msg['args'])
         nil
       end
     end

@@ -2,17 +2,17 @@ require 'active_support/core_ext/string'
 require 'active_support/configurable'
 require 'active_support/core_ext/numeric/time'
 
-require 'sidekiq/batching/config'
-require 'sidekiq/batching/redis'
-require 'sidekiq/batching/batch'
-require 'sidekiq/batching/middleware'
-require 'sidekiq/batching/logging'
-require 'sidekiq/batching/actor'
-require 'sidekiq/batching/supervisor'
-require 'sidekiq/batching/version'
+require 'sidekiq/grouping/config'
+require 'sidekiq/grouping/redis'
+require 'sidekiq/grouping/batch'
+require 'sidekiq/grouping/middleware'
+require 'sidekiq/grouping/logging'
+require 'sidekiq/grouping/actor'
+require 'sidekiq/grouping/supervisor'
+require 'sidekiq/grouping/version'
 
 module Sidekiq
-  module Batching
+  module Grouping
     class << self
       attr_writer :logger
 
@@ -25,16 +25,16 @@ end
 
 Sidekiq.configure_client do |config|
   config.client_middleware do |chain|
-    chain.add Sidekiq::Batching::Middleware
+    chain.add Sidekiq::Grouping::Middleware
   end
 end
 
 Sidekiq.configure_server do |config|
   config.client_middleware do |chain|
-    chain.add Sidekiq::Batching::Middleware
+    chain.add Sidekiq::Grouping::Middleware
   end
 end
 
 if Sidekiq.server?
-  Sidekiq::Batching::Supervisor.run!
+  Sidekiq::Grouping::Supervisor.run!
 end

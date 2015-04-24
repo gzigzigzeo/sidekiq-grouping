@@ -1,7 +1,7 @@
 module Sidekiq
-  module Batching
+  module Grouping
     class Actor
-      include Sidekiq::Batching::Logging
+      include Sidekiq::Grouping::Logging
       include ::Celluloid
 
       def initialize
@@ -10,7 +10,7 @@ module Sidekiq
 
       private
       def start_polling
-        interval = Sidekiq::Batching::Config.poll_interval
+        interval = Sidekiq::Grouping::Config.poll_interval
         info "Start polling of queue batches every #{interval} seconds"
         every(interval) { flush_batches }
       end
@@ -18,7 +18,7 @@ module Sidekiq
       def flush_batches
         batches = []
 
-        Sidekiq::Batching::Batch.all.map do |batch|
+        Sidekiq::Grouping::Batch.all.map do |batch|
           if batch.could_flush?
             batches << batch
           end

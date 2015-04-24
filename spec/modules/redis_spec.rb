@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Sidekiq::Batching::Redis do
-  subject { Sidekiq::Batching::Redis.new }
+describe Sidekiq::Grouping::Redis do
+  subject { Sidekiq::Grouping::Redis.new }
 
   let(:queue_name)    { "my_queue" }
   let(:key)           { "batching:#{queue_name}" }
