@@ -1,18 +1,18 @@
 require 'active_support/core_ext/string'
 require 'active_support/configurable'
 require 'active_support/core_ext/numeric/time'
-
-require 'sidekiq/grouping/config'
-require 'sidekiq/grouping/redis'
-require 'sidekiq/grouping/batch'
-require 'sidekiq/grouping/middleware'
-require 'sidekiq/grouping/logging'
-require 'sidekiq/grouping/actor'
-require 'sidekiq/grouping/supervisor'
 require 'sidekiq/grouping/version'
 
 module Sidekiq
   module Grouping
+    autoload :Config, 'sidekiq/grouping/config'
+    autoload :Redis, 'sidekiq/grouping/redis'
+    autoload :Batch, 'sidekiq/grouping/batch'
+    autoload :Middleware, 'sidekiq/grouping/middleware'
+    autoload :Logging, 'sidekiq/grouping/logging'
+    autoload :Actor, 'sidekiq/grouping/actor'
+    autoload :Supervisor, 'sidekiq/grouping/supervisor'
+
     class << self
       attr_writer :logger
 
