@@ -5,8 +5,8 @@ describe Sidekiq::Grouping::Batch do
 
   context 'adding' do
     it 'must enqueue unbatched worker' do
-       RegularWorker.perform_async('bar')
-       expect(RegularWorker).to have_enqueued_job('bar')
+      RegularWorker.perform_async('bar')
+      expect(RegularWorker).to have_enqueued_job('bar')
     end
 
     it 'must not enqueue batched worker' do
@@ -61,7 +61,7 @@ describe Sidekiq::Grouping::Batch do
   end
 
   context 'flushing' do
-    it 'must put wokrer to queue on flush' do
+    it 'must put worker to queue on flush' do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
       expect(batch.could_flush?).to be_falsy
@@ -69,6 +69,16 @@ describe Sidekiq::Grouping::Batch do
       batch.flush
       expect(BatchedSizeWorker).to have_enqueued_job([["bar"], ["bar"], ["bar"]])
       expect(batch.size).to eq(7)
+    end
+
+    it 'must put all jobs to worker queue' do
+      batch = subject.new(BatchedAtOnceWorker.name, 'batched_at_once')
+
+      expect(batch.could_flush?).to be_falsy
+      7.times { BatchedAtOnceWorker.perform_async('bar') }
+      batch.flush
+      expect(BatchedAtOnceWorker).to have_enqueued_job(["bar"],["bar"],["bar"],["bar"],["bar"],["bar"])
+      expect(batch.size).to eq(6)
     end
   end
 
