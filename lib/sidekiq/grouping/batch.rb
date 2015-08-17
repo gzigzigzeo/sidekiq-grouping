@@ -31,21 +31,28 @@ module Sidekiq
       end
 
       def pluck
+        chunk = []
         if @redis.lock(@name)
-          @redis.pluck(@name, chunk_size).map { |value| JSON.parse(value) }
+          loop do
+            single_chunk = @redis.pluck(@name, chunk_size).map { |value| JSON.parse(value) }
+            chunk.push(*single_chunk)
+            break unless worker_class_options['batch_at_once']
+            break if size < chunk_size
+          end
         end
+        chunk
       end
 
       def flush
         chunk = pluck
-        if chunk
-          set_current_time_as_last
+        chunk.each_slice(chunk_size).each do |slice|
           Sidekiq::Client.push(
             'class' => @worker_class,
             'queue' => @queue,
-            'args' => [true, chunk]
+            'args' => [true, slice]
           )
         end
+        set_current_time_as_last
       end
 
       def worker_class_constant
