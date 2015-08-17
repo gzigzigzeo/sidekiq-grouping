@@ -71,14 +71,28 @@ describe Sidekiq::Grouping::Batch do
       expect(batch.size).to eq(7)
     end
 
-    it 'must put all jobs to worker queue' do
+    it 'must put all jobs at once to worker queue' do
       batch = subject.new(BatchedAtOnceWorker.name, 'batched_at_once')
 
       expect(batch.could_flush?).to be_falsy
       7.times { BatchedAtOnceWorker.perform_async('bar') }
       batch.flush
-      expect(BatchedAtOnceWorker).to have_enqueued_job(["bar"],["bar"],["bar"],["bar"],["bar"],["bar"])
-      expect(batch.size).to eq(6)
+      expect(BatchedAtOnceWorker).to have_enqueued_job([["bar"],["bar"],["bar"]])
+      expect(batch.size).to eq(1)
+    end
+
+    it 'must put all jobs at once to queue of time came and at once is set' do
+      batch = subject.new(BatchedAtOnceIntervalWorker.name, 'batched_at_once_interval')
+
+      expect(batch.could_flush?).to be_falsy
+      7.times { BatchedAtOnceIntervalWorker.perform_async('bar') }
+      expect(batch.could_flush?).to be_truthy
+      expect(batch.size).to eq(7)
+      batch.flush
+      expect(batch.could_flush?).to be_falsy
+      Timecop.travel(2.hours.since)
+
+      expect(batch.could_flush?).to be_truthy
     end
   end
 

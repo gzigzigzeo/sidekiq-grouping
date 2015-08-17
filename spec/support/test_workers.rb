@@ -49,3 +49,12 @@ class BatchedAtOnceWorker
   def perform(foo)
   end
 end
+
+class BatchedAtOnceIntervalWorker
+  include Sidekiq::Worker
+
+  sidekiq_options queue: :batched_at_once_interval, batch_size: 3, batch_at_once: true, batch_flush_interval: 3600
+
+  def perform(foo)
+  end
+end
