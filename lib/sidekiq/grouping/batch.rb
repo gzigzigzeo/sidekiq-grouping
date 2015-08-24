@@ -129,7 +129,6 @@ module Sidekiq
           [klass.classify, queue]
         end
       end
-
     end
   end
 end
