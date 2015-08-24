@@ -62,7 +62,7 @@ This jobs will be grouped into the single job with the single argument:
 
 ## Options
 
-- `batch_unique` prevents enqueue of jobs with identical arguments if set.
+- `batch_unique` prevents enqueue of jobs with identical arguments.
 
   ```ruby
   class FooWorker
@@ -89,7 +89,7 @@ This jobs will be grouped into the single job with the single argument:
   class FooWorker
     include Sidekiq::Worker
 
-    sidekiq_options batch_flush_interval: 10, batch_flush_size: 5, batch_size: 2
+    sidekiq_options batch_flush_size: 5, batch_size: 2
 
     def perform(n)
       puts n
