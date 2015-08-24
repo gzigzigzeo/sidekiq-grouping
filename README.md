@@ -1,9 +1,5 @@
 # Sidekiq::Grouping
 
-[![Build Status](https://travis-ci.org/gzigzigzeo/sidekiq-grouping.svg)](http://travis-ci.org/gzigzigzeo/sidekiq-grouping)
-[![Code Climate](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping/badges/gpa.svg)](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping)
-[![Test Coverage](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping/badges/coverage.svg)](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping)
-
 <a href="https://evilmartians.com/?utm_source=sidekiq-grouping-gem">
 <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg" alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
