@@ -83,7 +83,7 @@ This jobs will be grouped into the single job with the single argument:
   # => [[1], [2]]
   ```
 
-- `batch_size` - is used to control single group size.
+- `batch_size` - is used to control group size.
 
   ```ruby
   class FooWorker
