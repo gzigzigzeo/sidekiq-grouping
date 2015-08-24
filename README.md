@@ -122,7 +122,7 @@ require "sidekiq/grouping/web"
 ```ruby
 Sidekiq::Grouping::Config.poll_interval = 5     # Amount of time between polling batches
 Sidekiq::Grouping::Config.max_batch_size = 5000 # Maximum batch size allowed
-Sidekiq::Grouping::Config.lock_ttl = 1          # Timeout of lock set when batched job enqueues
+Sidekiq::Grouping::Config.lock_ttl = 1          # Batch queue flush lock timeout job enqueues
 ```
 
 ## TODO
