@@ -19,10 +19,9 @@ class ElasticBulkIndexWorker
   include Sidekiq::Worker
 
   sidekiq_options(
-    queue: :group_by_size,
+    queue: :elasic_bulks,
     batch_flush_size: 30,     # Jobs will be combined when queue size exceeds 30
     batch_flush_interval: 60, # Jobs will be combined every 60 seconds
-    batch_unique: true,       # Prevents jobs with identical arguments to be enqueued
     retry: 5
   )
 
@@ -36,6 +35,8 @@ end
 Perform a jobs:
 
 ```ruby
+# At least 30 times
+
 ElasticBulkIndexWorker.perform_async({ delete: { _index: 'test', _id: 5, _type: 'user' } })
 ElasticBulkIndexWorker.perform_async({ delete: { _index: 'test', _id: 6, _type: 'user' } })
 ElasticBulkIndexWorker.perform_async({ delete: { _index: 'test', _id: 7, _type: 'user' } })
@@ -55,9 +56,54 @@ This jobs will be grouped into the single job with the single argument:
 
 ## Grouping control
 
-- If `batch_flush_size` option set - grouping will be performed when batched queue size exceeds this value or `Sidekiq::Grouping::Config.max_batch_size` (1000 by default).
-- If `batch_flush_interval` option set - grouping will be performed every given interval.
-- If both are set - grouping will be performed when any condition become true. For example, if `batch_flush_interval` is set to 60 and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of the minute. In the other hand, if 3 jobs will be enqueued during 10 seconds - they will be grouped and enqueued immediately.
+- If `batch_flush_size` option is set - grouping will be performed when batched queue size exceeds this value or `Sidekiq::Grouping::Config.max_batch_size` (1000 by default).
+- If `batch_flush_interval` option is set - grouping will be performed every given interval.
+- If both are set - grouping will be performed when first condition become true. For example, if `batch_flush_interval` is set to 60 seconds and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of the minute. In the other hand, if 3 jobs will be enqueued during 10 seconds - they will be grouped and enqueued immediately.
+
+## Options
+
+- `batch_unique` - prevents enqueue of jobs with identical arguments.
+
+  ```ruby
+  class FooWorker
+    include Sidekiq::Worker
+
+    sidekiq_options batch_flush_interval: 10, batch_unique: true
+
+    def perform(n)
+      puts n
+    end
+  end
+
+  FooWorker.perform_async(1)
+  FooWorker.perform_async(1)
+  FooWorker.perform_async(2)
+  FooWorker.perform_async(2)
+
+  # => [[1], [2]]
+  ```
+
+- `batch_size` - is used to control single group size.
+
+  ```ruby
+  class FooWorker
+    include Sidekiq::Worker
+
+    sidekiq_options batch_flush_interval: 10, batch_size: 2
+
+    def perform(n)
+      puts n
+    end
+  end
+
+  FooWorker.perform_async(1)
+  FooWorker.perform_async(2)
+  FooWorker.perform_async(3)
+  FooWorker.perform_async(4)
+
+  # => [[1], [2]]
+  # => [[3], [4]]
+  ```
 
 ## Web UI
 

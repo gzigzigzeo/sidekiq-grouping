@@ -9,6 +9,7 @@ module Sidekiq
       end
 
       private
+      
       def start_polling
         interval = Sidekiq::Grouping::Config.poll_interval
         info "Start polling of queue batches every #{interval} seconds"
