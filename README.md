@@ -89,7 +89,7 @@ This jobs will be grouped into the single job with the single argument:
   class FooWorker
     include Sidekiq::Worker
 
-    sidekiq_options batch_flush_interval: 10, batch_size: 2
+    sidekiq_options batch_flush_interval: 10, batch_flush_size: 5, batch_size: 2
 
     def perform(n)
       puts n
@@ -100,9 +100,11 @@ This jobs will be grouped into the single job with the single argument:
   FooWorker.perform_async(2)
   FooWorker.perform_async(3)
   FooWorker.perform_async(4)
+  FooWorker.perform_async(5)
 
   # => [[1], [2]]
   # => [[3], [4]]
+  # => [[5]]
   ```
 
 ## Web UI

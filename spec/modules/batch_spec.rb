@@ -65,9 +65,9 @@ describe Sidekiq::Grouping::Batch do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
       expect(batch.could_flush?).to be_falsy
-      10.times { BatchedSizeWorker.perform_async('bar') }
+      10.times { |n| BatchedSizeWorker.perform_async("bar#{n}") }
       batch.flush
-      expect(BatchedSizeWorker).to have_enqueued_job([["bar"], ["bar"], ["bar"]])
+      expect(BatchedSizeWorker).to have_enqueued_job([["bar0"], ["bar1"]])
       expect(batch.size).to eq(7)
     end
   end

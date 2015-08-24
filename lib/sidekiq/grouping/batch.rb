@@ -26,26 +26,33 @@ module Sidekiq
       end
 
       def chunk_size
+        worker_class_options['batch_size'] ||
+          Sidekiq::Grouping::Config.max_batch_size
+      end
+
+      def pluck_size
         worker_class_options['batch_flush_size'] ||
           Sidekiq::Grouping::Config.max_batch_size
       end
 
       def pluck
         if @redis.lock(@name)
-          @redis.pluck(@name, chunk_size).map { |value| JSON.parse(value) }
+          @redis.pluck(@name, pluck_size).map { |value| JSON.parse(value) }
         end
       end
 
       def flush
         chunk = pluck
-        if chunk
-          set_current_time_as_last
+        return unless chunk
+
+        chunk.each_slice(chunk_size) do |subchunk|
           Sidekiq::Client.push(
             'class' => @worker_class,
             'queue' => @queue,
-            'args' => [true, chunk]
+            'args' => [true, subchunk]
           )
         end
+        set_current_time_as_last
       end
 
       def worker_class_constant
@@ -81,8 +88,9 @@ module Sidekiq
       private
 
       def could_flush_on_overflow?
+        return true if size >= Sidekiq::Grouping::Config.max_batch_size
         worker_class_options['batch_flush_size'] &&
-        size >= worker_class_options['batch_flush_size']
+          size >= worker_class_options['batch_flush_size']
       end
 
       def could_flush_on_time?
@@ -95,9 +103,7 @@ module Sidekiq
           set_current_time_as_last
           false
         else
-          if next_time
-            next_time < Time.now
-          end
+          next_time < Time.now if next_time
         end
       end
 
