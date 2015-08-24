@@ -1,14 +1,18 @@
 # Sidekiq::Grouping
 
-Lets you batch similar tasks to run them all as a single task.
+[![Build Status](https://travis-ci.org/gzigzigzeo/sidekiq-grouping.svg)](http://travis-ci.org/gzigzigzeo/sidekiq-grouping)
+[![Code Climate](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping/badges/gpa.svg)](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping)
+[![Test Coverage](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping/badges/coverage.svg)](https://codeclimate.com/github/gzigzigzeo/sidekiq-grouping)
+
+<a href="https://evilmartians.com/?utm_source=sidekiq-grouping-gem">
+<img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg" alt="Sponsored by Evil Martians" width="236" height="54">
+</a>
 
 Allows identical sidekiq jobs to be processed with a single background call.
 
 Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
 * Periodical batch updating of recently changing database counters.
-
-Sponsored by [Evil Martians](http://evilmartians.com)
 
 ## Usage
 
@@ -22,6 +26,7 @@ class ElasticBulkIndexWorker
     queue: :batched_by_size,
     batch_size: 30,           # Jobs will be combined to groups of 30 items
     batch_flush_interval: 60, # Combined jobs will be executed at least every 60 seconds
+    batch_unique: true,       # Prevents jobs with identical arguments to be enqueued
     retry: 5
   )
 
