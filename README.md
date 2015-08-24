@@ -24,7 +24,7 @@ class ElasticBulkIndexWorker
 
   sidekiq_options(
     queue: :group_by_size,
-    batch_size: 30,           # Jobs will be combined to groups of 30 items
+    batch_flush_size: 30,     # Combined jobs will be executed every 30 items enqueued
     batch_flush_interval: 60, # Combined jobs will be executed at least every 60 seconds
     batch_unique: true,       # Prevents jobs with identical arguments to be enqueued
     retry: 5
@@ -57,7 +57,11 @@ This jobs will be grouped into a single job which will be performed with the sin
 ]
 ```
 
-This will happen for every 30 jobs in a row or every 60 seconds.
+## Flush conditions
+
+- If `batch_flush_size` option set - grouping will be performed when batched queue size exceeds this value.
+- If `batch_flush_interval` option set - grouping will be performed every given interval.
+- If both are set - grouping will be performed when on any condition became true. For example, if `batch_flush_interval` is set to 60 and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of minute.
 
 ## Web UI
 
