@@ -42,7 +42,7 @@ ElasticBulkIndexWorker.perform_async({ delete: { _index: 'test', _id: 7, _type: 
 ...
 ```
 
-This jobs will be grouped into a single job with the single argument:
+This jobs will be grouped into the single job with the single argument:
 
 ```ruby
 [
@@ -53,11 +53,11 @@ This jobs will be grouped into a single job with the single argument:
 ]
 ```
 
-## Flush conditions
+## Grouping control
 
-- If `batch_flush_size` option set - grouping will be performed when batched queue size exceeds this value.
+- If `batch_flush_size` option set - grouping will be performed when batched queue size exceeds this value or `Sidekiq::Grouping::Config.max_batch_size` (1000 by default).
 - If `batch_flush_interval` option set - grouping will be performed every given interval.
-- If both are set - grouping will be performed when any condition become true. For example, if `batch_flush_interval` is set to 60 and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of minute.
+- If both are set - grouping will be performed when any condition become true. For example, if `batch_flush_interval` is set to 60 and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of the minute. In the other hand, if 3 jobs will be enqueued during 10 seconds - they will be grouped and enqueued immediately.
 
 ## Web UI
 
