@@ -6,7 +6,7 @@ module Sidekiq
         options = worker_class.get_sidekiq_options
 
         batch =
-          options.keys.include?('batch_size') ||
+          options.keys.include?('batch_flush_size') ||
           options.keys.include?('batch_flush_interval')
 
         passthrough =
@@ -25,8 +25,12 @@ module Sidekiq
       end
 
       private
+
       def add_to_batch(worker_class, queue, msg, redis_pool = nil)
-        Sidekiq::Grouping::Batch.new(worker_class.name, queue, redis_pool).add(msg['args'])
+        Sidekiq::Grouping::Batch
+          .new(worker_class.name, queue, redis_pool)
+          .add(msg['args'])
+
         nil
       end
     end

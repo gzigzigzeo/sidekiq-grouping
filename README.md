@@ -8,7 +8,7 @@
 <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg" alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
-Allows to group similar sidekiq jobs into groups to process them at once.
+Allows to combine similar sidekiq jobs into groups to process them at once.
 
 Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
@@ -23,7 +23,7 @@ class ElasticBulkIndexWorker
   include Sidekiq::Worker
 
   sidekiq_options(
-    queue: :batched_by_size,
+    queue: :group_by_size,
     batch_size: 30,           # Jobs will be combined to groups of 30 items
     batch_flush_interval: 60, # Combined jobs will be executed at least every 60 seconds
     batch_unique: true,       # Prevents jobs with identical arguments to be enqueued
