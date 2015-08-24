@@ -62,7 +62,7 @@ This jobs will be grouped into the single job with the single argument:
 
 ## Options
 
-- `batch_unique` - prevents enqueue of jobs with identical arguments.
+- `batch_unique` prevents enqueue of jobs with identical arguments if set.
 
   ```ruby
   class FooWorker
@@ -83,7 +83,7 @@ This jobs will be grouped into the single job with the single argument:
   # => [[1], [2]]
   ```
 
-- `batch_size` - is used to control group size.
+- `batch_size` is used to control single group size.
 
   ```ruby
   class FooWorker
