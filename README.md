@@ -128,7 +128,6 @@ Sidekiq::Grouping::Config.lock_ttl = 1          # Batch queue flush lock timeout
 ## TODO
 
 1. Add support redis_pool option.
-2. Make able to work together with sidekiq-unique-jobs.
 
 ## Installation
 
