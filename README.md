@@ -54,11 +54,11 @@ This jobs will be grouped into the single job with the single argument:
 ]
 ```
 
-## Grouping control
+## Control grouping
 
 - If `batch_flush_size` option is set - grouping will be performed when batched queue size exceeds this value or `Sidekiq::Grouping::Config.max_batch_size` (1000 by default).
 - If `batch_flush_interval` option is set - grouping will be performed every given interval.
-- If both are set - grouping will be performed when first condition become true. For example, if `batch_flush_interval` is set to 60 seconds and `batch_flush_size` is set to 5 - group task will be enqueued even just 3 tasks are in the queue at the end of the minute. In the other hand, if 3 jobs will be enqueued during 10 seconds - they will be grouped and enqueued immediately.
+- If both are set - grouping will be performed when first condition become true. For example, if `batch_flush_interval` is set to 60 seconds and `batch_flush_size` is set to 5 - group task will be enqueued even if just 3 jobs are in the queue at the end of the minute. In the other hand, if 5 jobs were enqueued during 10 seconds - they will be grouped and enqueued immediately.
 
 ## Options
 
