@@ -10,6 +10,8 @@ Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
 * Periodical batch updating of recently changing database counters.
 
+*NOTE:* As of 1.0 `batch_size` renamed to `batch_flush_size`.
+
 ## Usage
 
 Create a worker:
