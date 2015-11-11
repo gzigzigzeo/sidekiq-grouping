@@ -14,12 +14,14 @@ module Sidekiq
           msg['args'].is_a?(Array) &&
           msg['args'].try(:first) == true
 
-        if batch && not(passthrough)
+        retrying = msg["retry"]
+
+        return yield unless batch
+
+        if !(passthrough || retrying)
           add_to_batch(worker_class, queue, msg, redis_pool)
         else
-          if batch && passthrough
-            msg['args'].shift
-          end
+          msg['args'].shift if passthrough
           yield
         end
       end
