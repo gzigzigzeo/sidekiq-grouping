@@ -14,7 +14,7 @@ module Sidekiq
           msg['args'].is_a?(Array) &&
           msg['args'].try(:first) == true
 
-        retrying = msg["retry"]
+        retrying = msg["failed_at"].present?
 
         return yield unless batch
 
