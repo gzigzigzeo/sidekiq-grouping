@@ -29,10 +29,9 @@ module Sidekiq
       end
 
       def link_to_sidekiq_manager
-        Sidekiq::CLI.instance.launcher.manager.link(current_actor)
         start_polling
-      rescue NoMethodError
-        debug "Can't link #{self.class.name}. Sidekiq::Manager not running. Retrying in 5 seconds ..."
+      rescue
+        info "Can't link #{self.class.name}. Sidekiq::Manager not running. Retrying in 5 seconds ..."
         after(5) { link_to_sidekiq_manager }
       end
 
