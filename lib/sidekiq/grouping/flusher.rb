@@ -17,17 +17,4 @@ class Sidekiq::Grouping::Flusher
     )
     batches.each(&:flush)
   end
-
-  class << self
-    def start!
-      interval = Sidekiq::Grouping::Config.poll_interval
-      task = Concurrent::TimerTask.new(
-        execution_interval: interval
-      ) { new.flush }
-      task.add_observer(Sidekiq::Grouping::FlusherObserver.new)
-      Sidekiq::Grouping.logger.info(
-        "[Sidekiq::Grouping] Started polling batches every #{interval} seconds"
-      )
-    end
-  end
 end

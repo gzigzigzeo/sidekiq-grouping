@@ -18,6 +18,19 @@ module Sidekiq::Grouping
     def logger
       @logger ||= Sidekiq.logger
     end
+
+    def start!
+      interval = Sidekiq::Grouping::Config.poll_interval
+      @observer = Sidekiq::Grouping::FlusherObserver.new
+      @task = Concurrent::TimerTask.new(
+        execution_interval: interval
+      ) { Sidekiq::Grouping::Flusher.new.flush }
+      @task.add_observer(@observer)
+      logger.info(
+        "[Sidekiq::Grouping] Started polling batches every #{interval} seconds"
+      )
+      @task.execute
+    end
   end
 end
 
@@ -33,4 +46,4 @@ Sidekiq.configure_server do |config|
   end
 end
 
-Sidekiq::Grouping::Flusher.start! if Sidekiq.server?
+Sidekiq::Grouping.start! if Sidekiq.server?
