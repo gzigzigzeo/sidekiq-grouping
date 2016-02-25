@@ -1,3 +1,5 @@
+require 'celluloid/current' unless defined?(Celluloid)
+
 module Sidekiq
   module Grouping
     module Supervisor
