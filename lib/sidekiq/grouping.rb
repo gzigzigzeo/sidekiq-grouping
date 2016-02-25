@@ -1,24 +1,22 @@
-require 'active_support/core_ext/string'
-require 'active_support/configurable'
-require 'active_support/core_ext/numeric/time'
-require 'sidekiq/grouping/version'
+require "active_support/core_ext/string"
+require "active_support/configurable"
+require "active_support/core_ext/numeric/time"
+require "sidekiq/grouping/version"
+require "concurrent"
 
-module Sidekiq
-  module Grouping
-    autoload :Config, 'sidekiq/grouping/config'
-    autoload :Redis, 'sidekiq/grouping/redis'
-    autoload :Batch, 'sidekiq/grouping/batch'
-    autoload :Middleware, 'sidekiq/grouping/middleware'
-    autoload :Logging, 'sidekiq/grouping/logging'
-    autoload :Actor, 'sidekiq/grouping/actor'
-    autoload :Supervisor, 'sidekiq/grouping/supervisor'
+module Sidekiq::Grouping
+  autoload :Config, "sidekiq/grouping/config"
+  autoload :Redis, "sidekiq/grouping/redis"
+  autoload :Batch, "sidekiq/grouping/batch"
+  autoload :Middleware, "sidekiq/grouping/middleware"
+  autoload :Flusher, "sidekiq/grouping/flusher"
+  autoload :FlusherObserver, "sidekiq/grouping/flusher_observer"
 
-    class << self
-      attr_writer :logger
+  class << self
+    attr_writer :logger
 
-      def logger
-        @logger ||= Sidekiq.logger
-      end
+    def logger
+      @logger ||= Sidekiq.logger
     end
   end
 end
@@ -35,6 +33,4 @@ Sidekiq.configure_server do |config|
   end
 end
 
-if Sidekiq.server?
-  Sidekiq::Grouping::Supervisor.run!
-end
+Sidekiq::Grouping::Flusher.start! if Sidekiq.server?

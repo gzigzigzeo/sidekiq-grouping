@@ -1,7 +1,6 @@
 module Sidekiq
   module Grouping
     class Batch
-
       def initialize(worker_class, queue, redis_pool = nil)
         @worker_class = worker_class
         @queue = queue
