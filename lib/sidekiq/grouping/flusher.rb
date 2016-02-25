@@ -1,4 +1,4 @@
-class Sidekiq::Grouping::Fluser
+class Sidekiq::Grouping::Flusher
   def flush
     batches = Sidekiq::Grouping::Batch.all.map do |batch|
       batch if batch.could_flush?
