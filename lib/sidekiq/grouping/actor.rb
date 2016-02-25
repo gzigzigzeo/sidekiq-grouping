@@ -2,14 +2,14 @@ module Sidekiq
   module Grouping
     class Actor
       include Sidekiq::Grouping::Logging
-      include ::Celluloid
+      include ::Celluloid if defined?(Celluloid)
 
       def initialize
         link_to_sidekiq_manager
       end
 
       private
-      
+
       def start_polling
         interval = Sidekiq::Grouping::Config.poll_interval
         info "Start polling of queue batches every #{interval} seconds"
