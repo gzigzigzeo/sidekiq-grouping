@@ -11,6 +11,7 @@ Useful for:
 * Periodical batch updating of recently changing database counters.
 
 *NOTE:* As of 1.0 `batch_size` renamed to `batch_flush_size`.
+*NOTE:* As of 1.0.6 works with Sidekiq 4.
 
 ## Usage
 
