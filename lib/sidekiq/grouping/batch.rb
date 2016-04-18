@@ -31,7 +31,7 @@ module Sidekiq
 
       def pluck_size
         worker_class_options['batch_flush_size'] ||
-          Sidekiq::Grouping::Config.max_batch_size
+          chunk_size
       end
 
       def pluck
@@ -87,9 +87,7 @@ module Sidekiq
       private
 
       def could_flush_on_overflow?
-        return true if size >= Sidekiq::Grouping::Config.max_batch_size
-        worker_class_options['batch_flush_size'] &&
-          size >= worker_class_options['batch_flush_size']
+        size >= pluck_size
       end
 
       def could_flush_on_time?

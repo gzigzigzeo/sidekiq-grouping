@@ -6,8 +6,9 @@ module Sidekiq
         options = worker_class.get_sidekiq_options
 
         batch =
-          options.keys.include?('batch_flush_size') ||
-          options.keys.include?('batch_flush_interval')
+          options.key?('batch_flush_size') ||
+          options.key?('batch_flush_interval') ||
+          options.key?('batch_size')
 
         passthrough =
           msg['args'] &&
