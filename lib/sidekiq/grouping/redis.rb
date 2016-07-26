@@ -51,8 +51,10 @@ module Sidekiq
 
       def lock(name)
         redis do |conn|
-          id = ns("lock:#{name}")
-          conn.setnx(id, true).tap do |obtained|
+          begin
+            id = ns("lock:#{name}")
+            obtained = conn.setnx(id, true)
+          ensure
             if obtained
               conn.expire(id, Sidekiq::Grouping::Config.lock_ttl)
             end
