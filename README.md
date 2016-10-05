@@ -12,6 +12,7 @@ Useful for:
 
 *NOTE:* As of 1.0 `batch_size` renamed to `batch_flush_size`.
 *NOTE:* As of 1.0.6 works with Sidekiq 4.
+*NOTE:* As of 1.0.8 Locking is atomic (set nx/ex) and will no longer lead to batches that are permalocked and stuck
 
 ## Usage
 
