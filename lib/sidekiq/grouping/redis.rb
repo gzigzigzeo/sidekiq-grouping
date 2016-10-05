@@ -52,7 +52,7 @@ module Sidekiq
       def lock(name)
         redis do |conn|
           id = ns("lock:#{name}")
-          obtained = conn.set(id, true, nx: true, ex: Sidekiq::Grouping::Config.lock_ttl)
+          conn.set(id, true, nx: true, ex: Sidekiq::Grouping::Config.lock_ttl)
         end
       end
 
