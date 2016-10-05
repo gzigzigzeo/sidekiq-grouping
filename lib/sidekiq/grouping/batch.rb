@@ -1,7 +1,6 @@
 module Sidekiq
   module Grouping
     class Batch
-
       def initialize(worker_class, queue, redis_pool = nil)
         @worker_class = worker_class
         @queue = queue
@@ -32,7 +31,7 @@ module Sidekiq
 
       def pluck_size
         worker_class_options['batch_flush_size'] ||
-          Sidekiq::Grouping::Config.max_batch_size
+          chunk_size
       end
 
       def pluck
@@ -88,9 +87,7 @@ module Sidekiq
       private
 
       def could_flush_on_overflow?
-        return true if size >= Sidekiq::Grouping::Config.max_batch_size
-        worker_class_options['batch_flush_size'] &&
-          size >= worker_class_options['batch_flush_size']
+        size >= pluck_size
       end
 
       def could_flush_on_time?
@@ -126,7 +123,7 @@ module Sidekiq
 
         def extract_worker_klass_and_queue(name)
           klass, queue = name.split(':')
-          [klass.classify, queue]
+          [klass.camelize, queue]
         end
       end
     end

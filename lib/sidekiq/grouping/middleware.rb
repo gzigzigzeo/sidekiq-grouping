@@ -2,12 +2,15 @@ module Sidekiq
   module Grouping
     class Middleware
       def call(worker_class, msg, queue, redis_pool = nil)
-        worker_class = worker_class.classify.constantize if worker_class.is_a?(String)
+        return yield if (defined?(Sidekiq::Testing) && Sidekiq::Testing.inline?)
+
+        worker_class = worker_class.camelize.constantize if worker_class.is_a?(String)
         options = worker_class.get_sidekiq_options
 
         batch =
-          options.keys.include?('batch_flush_size') ||
-          options.keys.include?('batch_flush_interval')
+          options.key?('batch_flush_size') ||
+          options.key?('batch_flush_interval') ||
+          options.key?('batch_size')
 
         passthrough =
           msg['args'] &&

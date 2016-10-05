@@ -1,0 +1,17 @@
+require: rubocop-rspec
+
+AllCops:
+  Include:
+    - ./Gemfile
+
+Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact
+
+RSpec/FilePath:
+  Enabled: false
