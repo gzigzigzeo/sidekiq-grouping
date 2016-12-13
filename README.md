@@ -123,11 +123,24 @@ require "sidekiq/grouping/web"
 
 ## Configuration
 
-```ruby
-Sidekiq::Grouping::Config.poll_interval = 5     # Amount of time between polling batches
-Sidekiq::Grouping::Config.max_batch_size = 5000 # Maximum batch size allowed
-Sidekiq::Grouping::Config.lock_ttl = 1          # Batch queue flush lock timeout job enqueues
+Specify grouping configuration inside of sidekiq.yml:
+
+```yml
+grouping:
+  :poll_interval: 5       # Amount of time between polling batches
+  :max_batch_size: 5000   # Maximum batch size allowed
+  :lock_ttl: 1            # Batch queue flush lock timeout job enqueues
 ```
+
+Or set it in your code:
+
+```ruby
+Sidekiq::Grouping::Config.poll_interval = 5
+Sidekiq::Grouping::Config.max_batch_size = 5000
+Sidekiq::Grouping::Config.lock_ttl = 1
+```
+
+Note that you should set poll_interval option inside of sidekiq.yml to take effect. Setting this param in your ruby code won't change actual polling frequency.
 
 ## TODO
 
