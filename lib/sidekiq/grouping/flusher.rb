@@ -7,6 +7,17 @@ class Sidekiq::Grouping::Flusher
     flush_concrete(batches)
   end
 
+  def force_flush_for_test!
+    if defined?(::Rails) && Rails.respond_to?(:env) && !Rails.env.test?
+      puts("**************************************************")
+      puts("⛔️ WARNING: force_flush_for_test! for testing API, but this is not the test environment.")
+      puts("**************************************************")
+    end
+    batches = Sidekiq::Grouping::Batch.all
+    batches.compact!
+    flush_concrete(batches)
+  end
+
   private
 
   def flush_concrete(batches)
