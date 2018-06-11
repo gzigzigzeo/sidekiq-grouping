@@ -8,12 +8,16 @@ class Sidekiq::Grouping::Flusher
 
   def force_flush_for_test!
     if defined?(::Rails) && Rails.respond_to?(:env) && !Rails.env.test?
-      puts("**************************************************")
-      puts([
-        "⛔️ WARNING: force_flush_for_test! for testing API, ",
+      Sidekiq::Grouping.logger.warn(
+        "**************************************************"
+      )
+      Sidekiq::Grouping.logger.warn([
+        "⛔️ force_flush_for_test! for testing API, ",
         "but this is not the test environment."
       ].join)
-      puts("**************************************************")
+      Sidekiq::Grouping.logger.warn(
+        "**************************************************"
+      )
     end
     flush_batches(Sidekiq::Grouping::Batch.all)
   end
@@ -30,7 +34,7 @@ class Sidekiq::Grouping::Flusher
     names = batches.map { |batch| "#{batch.worker_class} in #{batch.queue}" }
     Sidekiq::Grouping.logger.info(
       "[Sidekiq::Grouping] Trying to flush batched queues: #{names.join(',')}"
-    )
+    ) unless defined?(::Rails) && Rails.respond_to?(:env) && Rails.env.test?
     batches.each(&:flush)
   end
 end
