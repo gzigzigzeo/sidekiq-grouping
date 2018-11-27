@@ -7,13 +7,15 @@ class Sidekiq::Grouping::Flusher
   end
 
   def force_flush_for_test!
-    if defined?(::Rails) && Rails.respond_to?(:env) && !Rails.env.test?
+    unless Sidekiq::Grouping::Config.tests_env
       Sidekiq::Grouping.logger.warn(
         "**************************************************"
       )
       Sidekiq::Grouping.logger.warn([
         "⛔️ force_flush_for_test! for testing API, ",
-        "but this is not the test environment."
+        "but this is not the test environment. ",
+        "Please check your environment or ",
+        "change 'tests_env' to cover this one"
       ].join)
       Sidekiq::Grouping.logger.warn(
         "**************************************************"

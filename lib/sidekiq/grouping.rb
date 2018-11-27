@@ -19,6 +19,10 @@ module Sidekiq::Grouping
       @logger ||= Sidekiq.logger
     end
 
+    def force_flush_for_test!
+      Sidekiq::Grouping::Flusher.new.force_flush_for_test!
+    end
+
     def start!
       interval = Sidekiq::Grouping::Config.poll_interval
       @observer = Sidekiq::Grouping::FlusherObserver.new

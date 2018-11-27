@@ -111,6 +111,8 @@ This jobs will be grouped into the single job with the single argument:
   # => [[5]]
   ```
 
+- `tests_env` is used to check about test environment for `force_flush_for_test!` method (check "Testing with Sidekiq::Testing.fake!" section)
+
 ## Web UI
 
 ![Web UI](web.png)
@@ -144,7 +146,7 @@ Note that you should set poll_interval option inside of sidekiq.yml to take effe
 
 ## Testing with Sidekiq::Testing.fake!
 
-Sidekiq::Grouping is using separate queues for grouping tasks, so you need manualy "group" tasks in your tests, if you want check tasks in your tests by sidekiq fake interface. For this case exists function `Sidekiq::Grouping::Flusher.new.force_flush_for_test!`. Example:
+Sidekiq::Grouping is using separate queues for grouping tasks, so you need manualy "group" tasks in your tests, if you want check tasks in your tests by sidekiq fake interface. For this case exists function `Sidekiq::Grouping.force_flush_for_test!`. Example:
 
 ```ruby
 # worker
@@ -176,7 +178,7 @@ RSpec.describe GroupedWorker, type: :worker do
         described_class.perform_async(1)
         described_class.perform_async(2)
         described_class.perform_async(2)
-        Sidekiq::Grouping::Flusher.new.force_flush_for_test! # call this to flush job in queue
+        Sidekiq::Grouping.force_flush_for_test! # call this to flush job in queue
 
         last_job = described_class.jobs.last
         expect(last_job['args']).to eq([[[1], [2]]])
@@ -188,6 +190,8 @@ RSpec.describe GroupedWorker, type: :worker do
 end
 
 ```
+
+If environment is not for tests (default value is `Rails.env.test`), then you will get warning message about usage this method in incorrect way. You can override check for test environment by `tests_env` option.
 
 ## TODO
 
