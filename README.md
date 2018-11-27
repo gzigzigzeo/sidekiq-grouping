@@ -111,7 +111,7 @@ This jobs will be grouped into the single job with the single argument:
   # => [[5]]
   ```
 
-- `tests_env` is used to check about test environment for `force_flush_for_test!` method (check "Testing with Sidekiq::Testing.fake!" section)
+- `tests_env` is used to silence some logging in test environments (see below). Default: true if `Rails.env.test?`, false otherwise.
 
 ## Web UI
 
@@ -146,7 +146,9 @@ Note that you should set poll_interval option inside of sidekiq.yml to take effe
 
 ## Testing with Sidekiq::Testing.fake!
 
-Sidekiq::Grouping is using separate queues for grouping tasks, so you need manualy "group" tasks in your tests, if you want check tasks in your tests by sidekiq fake interface. For this case exists function `Sidekiq::Grouping.force_flush_for_test!`. Example:
+Sidekiq::Grouping uses internal queues for grouping tasks. If you need to force flush internal queues into normal Sidekiq queues, use `Sidekiq::Grouping.force_flush_for_test!`.
+
+See example:
 
 ```ruby
 # worker
@@ -163,7 +165,7 @@ class GroupedWorker
   )
 
   def perform(grouped_arguments)
-    # your code
+    # ... important payload
   end
 
 end
@@ -178,7 +180,9 @@ RSpec.describe GroupedWorker, type: :worker do
         described_class.perform_async(1)
         described_class.perform_async(2)
         described_class.perform_async(2)
-        Sidekiq::Grouping.force_flush_for_test! # call this to flush job in queue
+
+        # All 4 above asks will be put to :custom_queue despite of :batch_flush_size is set to 9.
+        Sidekiq::Grouping.force_flush_for_test!
 
         last_job = described_class.jobs.last
         expect(last_job['args']).to eq([[[1], [2]]])
@@ -190,12 +194,6 @@ RSpec.describe GroupedWorker, type: :worker do
 end
 
 ```
-
-If environment is not for tests (default value is `Rails.env.test`), then you will get warning message about usage this method in incorrect way. You can override check for test environment by `tests_env` option.
-
-## TODO
-
-1. Add support redis_pool option.
 
 ## Installation
 

@@ -36,7 +36,7 @@ class Sidekiq::Grouping::Flusher
     names = batches.map { |batch| "#{batch.worker_class} in #{batch.queue}" }
     Sidekiq::Grouping.logger.info(
       "[Sidekiq::Grouping] Trying to flush batched queues: #{names.join(',')}"
-    ) unless defined?(::Rails) && Rails.respond_to?(:env) && Rails.env.test?
+    ) unless Sidekiq::Grouping::Config.tests_env
     batches.each(&:flush)
   end
 end
