@@ -23,7 +23,7 @@ class ElasticBulkIndexWorker
   include Sidekiq::Worker
 
   sidekiq_options(
-    queue: :elasic_bulks,
+    queue: :elastic_bulks,
     batch_flush_size: 30,     # Jobs will be combined when queue size exceeds 30
     batch_flush_interval: 60, # Jobs will be combined every 60 seconds
     retry: 5
