@@ -5,8 +5,8 @@ describe Sidekiq::Grouping::Batch do
 
   context 'adding' do
     it 'must enqueue unbatched worker' do
-       RegularWorker.perform_async('bar')
-       expect(RegularWorker).to have_enqueued_sidekiq_job("bar")
+      RegularWorker.perform_async('bar')
+      expect(RegularWorker).to have_enqueued_sidekiq_job("bar")
     end
 
     it 'must not enqueue batched worker' do
