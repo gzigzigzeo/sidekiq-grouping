@@ -16,7 +16,6 @@ describe Sidekiq::Grouping::Batch do
 
     it 'must not enqueue batched worker' do
       WithNameSpace::BatchedSizeWorker.perform_async('bar')
-      puts WithNameSpace::BatchedSizeWorker.name.inspect
       expect_batch(WithNameSpace::BatchedSizeWorker, 'batched_size')
    end
 

@@ -3,6 +3,7 @@ require "active_support/configurable"
 require "active_support/core_ext/numeric/time"
 require "sidekiq/grouping/version"
 require "concurrent"
+require 'oj'
 
 module Sidekiq::Grouping
   autoload :Config, "sidekiq/grouping/config"

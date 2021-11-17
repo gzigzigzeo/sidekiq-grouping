@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "byebug"
 
   spec.add_dependency "activesupport"
-  spec.add_dependency "sidekiq", ">= 3.4.2"
   spec.add_dependency "concurrent-ruby"
+  spec.add_dependency "oj"
+  spec.add_dependency "sidekiq", ">= 3.4.2"
 end
