@@ -12,7 +12,7 @@ module Sidekiq
         end
 
         app.post "/grouping/:name/delete" do
-          worker_class, queue = Sidekiq::Grouping::Batch.extract_worker_klass_and_queue(params['name'])
+          worker_class, queue = Sidekiq::Grouping::Batch.extract_worker_klass_and_queue(CGI.unescape(params['name']))
           batch = Sidekiq::Grouping::Batch.new(worker_class, queue)
           batch.delete
           redirect "#{root_path}grouping"

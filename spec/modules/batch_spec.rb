@@ -15,6 +15,12 @@ describe Sidekiq::Grouping::Batch do
     end
 
     it 'must not enqueue batched worker' do
+      WithNameSpace::BatchedSizeWorker.perform_async('bar')
+      puts WithNameSpace::BatchedSizeWorker.name.inspect
+      expect_batch(WithNameSpace::BatchedSizeWorker, 'batched_size')
+   end
+
+    it 'must not enqueue batched worker' do
       BatchedIntervalWorker.perform_async('bar')
       expect_batch(BatchedIntervalWorker, 'batched_interval')
     end
