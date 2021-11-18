@@ -14,12 +14,14 @@ class BatchedSizeWorker
   def perform(foo); end
 end
 
-class WithNameSpace::BatchedSizeWorker
-  include Sidekiq::Worker
+module WithNameSpace
+  class BatchedSizeWorker
+    include Sidekiq::Worker
 
-  sidekiq_options queue: :batched_size, batch_flush_size: 3, batch_size: 2
+    sidekiq_options queue: :batched_size, batch_flush_size: 3, batch_size: 2
 
-  def perform(foo); end
+    def perform(foo); end
+  end
 end
 
 class BatchedIntervalWorker
