@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 class RegularWorker
   include Sidekiq::Worker
 
-  def perform(foo)
-  end
+  def perform(foo); end
 end
 
 class BatchedSizeWorker
@@ -10,19 +11,15 @@ class BatchedSizeWorker
 
   sidekiq_options queue: :batched_size, batch_flush_size: 3, batch_size: 2
 
-  def perform(foo)
-  end
+  def perform(foo); end
 end
 
-module WithNameSpace
-  class BatchedSizeWorker
-    include Sidekiq::Worker
-  
-    sidekiq_options queue: :batched_size, batch_flush_size: 3, batch_size: 2
-  
-    def perform(foo)
-    end
-  end
+class WithNameSpace::BatchedSizeWorker
+  include Sidekiq::Worker
+
+  sidekiq_options queue: :batched_size, batch_flush_size: 3, batch_size: 2
+
+  def perform(foo); end
 end
 
 class BatchedIntervalWorker
@@ -30,8 +27,7 @@ class BatchedIntervalWorker
 
   sidekiq_options queue: :batched_interval, batch_flush_interval: 3600
 
-  def perform(foo)
-  end
+  def perform(foo); end
 end
 
 class BatchedBothWorker
@@ -41,8 +37,7 @@ class BatchedBothWorker
     queue: :batched_both, batch_flush_interval: 3600, batch_flush_size: 3
   )
 
-  def perform(foo)
-  end
+  def perform(foo); end
 end
 
 class BatchedUniqueArgsWorker
@@ -52,6 +47,5 @@ class BatchedUniqueArgsWorker
     queue: :batched_unique_args, batch_flush_size: 3, batch_unique: true
   )
 
-  def perform(foo)
-  end
+  def perform(foo); end
 end
