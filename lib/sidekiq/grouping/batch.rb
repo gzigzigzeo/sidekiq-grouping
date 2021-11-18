@@ -11,7 +11,7 @@ module Sidekiq
       attr_reader :name, :worker_class, :queue
 
       def add(msg)
-        msg = msg.to_json
+        msg = Oj.dump(msg)
         @redis.push_msg(@name, msg, enqueue_similar_once?) if should_add? msg
       end
 
@@ -36,7 +36,7 @@ module Sidekiq
 
       def pluck
         if @redis.lock(@name)
-          @redis.pluck(@name, pluck_size).map { |value| JSON.parse(value) }
+          @redis.pluck(@name, pluck_size).map { |value| Oj.load(value) }
         end
       end
 

@@ -2,6 +2,7 @@ $LOAD_PATH << "." unless $LOAD_PATH.include?(".")
 
 require "rubygems"
 require "bundler/setup"
+require "byebug"
 require "timecop"
 require "simplecov"
 require "sidekiq"

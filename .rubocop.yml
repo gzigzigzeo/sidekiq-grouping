@@ -15,3 +15,6 @@ Style/ClassAndModuleChildren:
 
 RSpec/FilePath:
   Enabled: false
+  
+Metrics/BlockLength:
+  IgnoredMethods: ['describe', 'context']
