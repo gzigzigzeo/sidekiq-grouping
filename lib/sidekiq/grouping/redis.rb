@@ -13,10 +13,10 @@ module Sidekiq
 
       def push_msg(name, msg, remember_unique = false)
         redis do |conn|
-          conn.multi do
-            conn.sadd(ns('batches'), name)
-            conn.rpush(ns(name), msg)
-            conn.sadd(unique_messages_key(name), msg) if remember_unique
+          conn.multi do |pipeline|
+            pipeline.sadd(ns('batches'), name)
+            pipeline.rpush(ns(name), msg)
+            pipeline.sadd(unique_messages_key(name), msg) if remember_unique
           end
         end
       end
