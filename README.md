@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/sidekiq-grouping.svg)](https://rubygems.org/gems/sidekiq-grouping)
+
 # Sidekiq::Grouping
 
 <a href="https://evilmartians.com/?utm_source=sidekiq-grouping-gem">
