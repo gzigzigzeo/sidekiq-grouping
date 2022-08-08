@@ -2,7 +2,7 @@ module Sidekiq::Grouping::Config
   include ActiveSupport::Configurable
 
   def self.options
-    Sidekiq.options[:grouping] || Sidekiq.options["grouping"] || {} # sidekiq 5.x use symbol in keys
+    Sidekiq[:grouping] || Sidekiq["grouping"] || {} # sidekiq 5.x uses symbols
   end
 
   # Queue size overflow check polling interval
