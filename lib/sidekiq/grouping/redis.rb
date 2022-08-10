@@ -97,6 +97,7 @@ module Sidekiq
         redis do |conn|
           conn.zrangebyscore(pending_jobs(name), '0', Time.now.to_i - ttl).each do |expired|
             conn.lmove(expired, ns(name), :right, :left)
+            remove_from_pending(name, expired)
           end
         end
       end
