@@ -12,6 +12,7 @@ module Sidekiq::Grouping
   autoload :Middleware, "sidekiq/grouping/middleware"
   autoload :Flusher, "sidekiq/grouping/flusher"
   autoload :FlusherObserver, "sidekiq/grouping/flusher_observer"
+  autoload :Lazarus, "sidekiq/grouping/lazarus"
 
   class << self
     attr_writer :logger
@@ -27,9 +28,10 @@ module Sidekiq::Grouping
     def start!
       interval = Sidekiq::Grouping::Config.poll_interval
       @observer = Sidekiq::Grouping::FlusherObserver.new
-      @task = Concurrent::TimerTask.new(
-        execution_interval: interval
-      ) { Sidekiq::Grouping::Flusher.new.flush }
+      @task = Concurrent::TimerTask.new(execution_interval: interval) do
+        Sidekiq::Grouping::Flusher.new.flush
+        Sidekiq::Grouping::Lazarus.new.revive if Sidekiq::Grouping::Config.reliable
+      end
       @task.add_observer(@observer)
       logger.info(
         "[Sidekiq::Grouping] Started polling batches every #{interval} seconds"

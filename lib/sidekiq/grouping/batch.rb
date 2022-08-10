@@ -41,6 +41,8 @@ module Sidekiq
       end
 
       def flush
+        return reliable_flush if reliable?
+
         chunk = pluck
         return unless chunk
 
@@ -52,6 +54,29 @@ module Sidekiq
           )
         end
         set_current_time_as_last
+      end
+
+      def reliable_flush
+        pending_name, chunk = reliable_pluck
+        return unless chunk
+
+        chunk.each_slice(chunk_size) do |subchunk|
+          Sidekiq::Client.push(
+            'class' => @worker_class,
+            'queue' => @queue,
+            'args' => [true, subchunk]
+          )
+        end
+        @redis.remove_from_pending(@name, pending_name)
+        set_current_time_as_last
+      end
+
+      def reliable_pluck
+        if @redis.lock(@name)
+          pending_name, items = @redis.reliable_pluck(@name, pluck_size)
+          items = items.map { |value| JSON.parse(value) }
+          [pending_name, items]
+        end
       end
 
       def worker_class_constant
@@ -84,6 +109,10 @@ module Sidekiq
         @redis.delete(@name)
       end
 
+      def requeue_expired
+        @redis.requeue_expired(@name, reliable_ttl)
+      end
+
       private
 
       def could_flush_on_overflow?
@@ -106,6 +135,14 @@ module Sidekiq
 
       def enqueue_similar_once?
         worker_class_options['batch_unique'] == true
+      end
+
+      def reliable?
+        worker_class_options['batch_reliable'] == true || Sidekiq::Grouping::Config.reliable == true
+      end
+
+      def reliable_ttl
+        worker_class_options['batch_reliable_ttl'] || 3600
       end
 
       def set_current_time_as_last
