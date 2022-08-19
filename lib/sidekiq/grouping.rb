@@ -9,6 +9,7 @@ module Sidekiq::Grouping
   autoload :Config, "sidekiq/grouping/config"
   autoload :Redis, "sidekiq/grouping/redis"
   autoload :Batch, "sidekiq/grouping/batch"
+  autoload :ReliableBatch, "sidekiq/grouping/reliable_batch"
   autoload :Middleware, "sidekiq/grouping/middleware"
   autoload :Flusher, "sidekiq/grouping/flusher"
   autoload :FlusherObserver, "sidekiq/grouping/flusher_observer"
