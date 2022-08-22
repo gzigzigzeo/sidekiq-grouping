@@ -15,17 +15,23 @@ module Sidekiq
       RELIABLE_PLUCK_SCRIPT = <<-SCRIPT
         redis.call('zadd', KEYS[3], KEYS[4], KEYS[5])
         redis.call('renamenx', KEYS[1], KEYS[5])
-        local pluck_values = redis.call('lrange', KEYS[5], 0, -1)
         local leftovers = redis.call('lrange', KEYS[5], ARGV[1], -1)
-        
         for i = #leftovers, 1, -1 do 
-          redis.call('lpush', KEYS[1], v)
+          redis.call('lmove', KEYS[5], KEYS[1], 'right', 'left')
         end
 
+        local pluck_values = redis.call('lrange', KEYS[5], 0, -1)
         for k, v in pairs(pluck_values) do
           redis.call('srem', KEYS[2], v)
         end
         return {KEYS[5], pluck_values}
+      SCRIPT
+
+      REQUEUE_SCRIPT = <<~SCRIPT
+        local to_requeue = redis.call('lrange', KEYS[1], 0, -1)
+        for i = #to_requeue, 1, -1 do 
+          redis.call('lpush', KEYS[2], to_requeue[i])
+        end
       SCRIPT
 
       def push_msg(name, msg, remember_unique = false)
@@ -61,9 +67,7 @@ module Sidekiq
       def reliable_pluck(name, limit)
         keys = [ns(name), unique_messages_key(name), pending_jobs(name), Time.now.to_i, this_job_name(name)]
         args = [limit, 7.days]
-        script = RELIABLE_PLUCK_SCRIPT
-
-        redis { |conn| conn.eval script, keys, args }
+        redis { |conn| conn.eval RELIABLE_PLUCK_SCRIPT, keys, args }
       end
 
       def get_last_execution_time(name)
@@ -96,7 +100,9 @@ module Sidekiq
       def requeue_expired(name, ttl=3600)
         redis do |conn|
           conn.zrangebyscore(pending_jobs(name), '0', Time.now.to_i - ttl).each do |expired|
-            conn.lmove(expired, ns(name), :right, :left)
+            keys = [expired, ns(name)]
+            args = []
+            conn.eval REQUEUE_SCRIPT, keys, args
             remove_from_pending(name, expired)
           end
         end

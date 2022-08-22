@@ -44,3 +44,14 @@ class BatchedUniqueArgsWorker
   def perform(foo)
   end
 end
+
+class ReliableBatchedSizeWorker
+  include Sidekiq::Worker
+
+  sidekiq_options(
+    queue: :reliable_batched_size, batch_flush_size: 3, batch_size: 2, batch_reliable: true
+  )
+
+  def perform(foo)
+  end
+end
