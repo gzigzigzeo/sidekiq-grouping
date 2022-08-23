@@ -11,28 +11,57 @@ module Sidekiq
         return pluck_values
       SCRIPT
 
-      # keys: 1 = queue, 2 = unique message, 3 = pending jobs, 4 = current time, 5 = this job
-      RELIABLE_PLUCK_SCRIPT = <<-SCRIPT
-        redis.call('zadd', KEYS[3], KEYS[4], KEYS[5])
-        redis.call('renamenx', KEYS[1], KEYS[5])
-        local leftovers = redis.call('lrange', KEYS[5], ARGV[1], -1)
-        for i = #leftovers, 1, -1 do 
-          redis.call('lmove', KEYS[5], KEYS[1], 'right', 'left')
-        end
+      RELIABLE_PLUCK_SCRIPT = <<-LUA
+        local queue = KEYS[1]
+        local unique_messages = KEYS[2]
+        local pending_jobs = KEYS[3]
+        local current_time = KEYS[4]
+        local this_job = KEYS[5]
+        local limit = ARGV[1]
 
-        local pluck_values = redis.call('lrange', KEYS[5], 0, -1)
-        for k, v in pairs(pluck_values) do
-          redis.call('srem', KEYS[2], v)
+        redis.call('zadd', pending_jobs, current_time, this_job)
+        local values = {}
+        for i = 1, limit do 
+          table.insert(values, redis.call('lmove', queue, this_job, 'left', 'right'))
         end
-        return {KEYS[5], pluck_values}
-      SCRIPT
+        redis.call('srem', unique_messages, unpack(values))
 
-      REQUEUE_SCRIPT = <<~SCRIPT
-        local to_requeue = redis.call('lrange', KEYS[1], 0, -1)
-        for i = #to_requeue, 1, -1 do 
-          redis.call('lpush', KEYS[2], to_requeue[i])
+        return {this_job, values}
+      LUA
+
+      REQUEUE_SCRIPT = <<-LUA
+        local expired_queue = KEYS[1]
+        local queue = KEYS[2]
+        local pending_jobs = KEYS[3]
+
+        local to_requeue = redis.call('llen', expired_queue)
+        for i = 1, to_requeue do
+          redis.call('lmove', expired_queue, queue, 'left', 'right')
         end
-      SCRIPT
+        redis.call('zrem', pending_jobs, expired_queue)
+      LUA
+
+      UNIQUE_REQUEUE_SCRIPT = <<-LUA
+        local expired_queue = KEYS[1]
+        local queue = KEYS[2]
+        local pending_jobs = KEYS[3]
+        local unique_messages = KEYS[4]
+
+        local to_requeue = redis.call('lrange', expired_queue, 0, -1)
+        for i = #to_requeue, 1, -1 do
+          local message = to_requeue[i]
+          if redis.call('sismember', unique_messages, message) == 0 then
+            redis.call('lmove', expired_queue, queue, 'right', 'left')
+          end
+        end
+        redis.call('zrem', pending_jobs, expired_queue)
+      LUA
+
+      def initialize
+        [PLUCK_SCRIPT, RELIABLE_PLUCK_SCRIPT, REQUEUE_SCRIPT, UNIQUE_REQUEUE_SCRIPT].each do |script|
+          redis { |conn| conn.script(:load, script) }
+        end
+      end
 
       def push_msg(name, msg, remember_unique = false)
         redis do |conn|
@@ -66,7 +95,7 @@ module Sidekiq
 
       def reliable_pluck(name, limit)
         keys = [ns(name), unique_messages_key(name), pending_jobs(name), Time.now.to_i, this_job_name(name)]
-        args = [limit, 7.days]
+        args = [limit]
         redis { |conn| conn.eval RELIABLE_PLUCK_SCRIPT, keys, args }
       end
 
@@ -97,13 +126,13 @@ module Sidekiq
         redis { |conn| conn.zrem(pending_jobs(name), batch_name) }
       end
 
-      def requeue_expired(name, ttl=3600)
+      def requeue_expired(name, unique = false, ttl = 3600)
         redis do |conn|
           conn.zrangebyscore(pending_jobs(name), '0', Time.now.to_i - ttl).each do |expired|
-            keys = [expired, ns(name)]
+            keys = [expired, ns(name), pending_jobs(name), unique_messages_key(name)]
             args = []
-            conn.eval REQUEUE_SCRIPT, keys, args
-            remove_from_pending(name, expired)
+            script = unique ? UNIQUE_REQUEUE_SCRIPT : REQUEUE_SCRIPT
+            conn.eval script, keys, args
           end
         end
       end

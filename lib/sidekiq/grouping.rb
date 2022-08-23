@@ -13,7 +13,7 @@ module Sidekiq::Grouping
   autoload :Middleware, "sidekiq/grouping/middleware"
   autoload :Flusher, "sidekiq/grouping/flusher"
   autoload :FlusherObserver, "sidekiq/grouping/flusher_observer"
-  autoload :Lazarus, "sidekiq/grouping/lazarus"
+  autoload :Supervisor, "sidekiq/grouping/supervisor"
 
   class << self
     attr_writer :logger
@@ -31,7 +31,7 @@ module Sidekiq::Grouping
       @observer = Sidekiq::Grouping::FlusherObserver.new
       @task = Concurrent::TimerTask.new(execution_interval: interval) do
         Sidekiq::Grouping::Flusher.new.flush
-        Sidekiq::Grouping::Lazarus.new.revive if Sidekiq::Grouping::Config.reliable
+        Sidekiq::Grouping::Supervisor.new.requeue_expired if Sidekiq::Grouping::Config.reliable
       end
       @task.add_observer(@observer)
       logger.info(

@@ -28,6 +28,11 @@ describe Sidekiq::Grouping::Batch do
       ReliableBatchedSizeWorker.perform_async('bar')
       expect_batch(ReliableBatchedSizeWorker, 'reliable_batched_size')
     end
+
+    it 'must not enqueue batched worker' do
+      ReliableBatchedUniqueSizeWorker.perform_async('bar')
+      expect_batch(ReliableBatchedUniqueSizeWorker, 'reliable_batched_unique_size')
+    end
   end
 
   context 'checking if should flush' do
