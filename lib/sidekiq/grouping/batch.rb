@@ -120,11 +120,7 @@ module Sidekiq
             if Sidekiq::Grouping::Config.reliable
               begin
                 klass, queue = extract_worker_klass_and_queue(name)
-                if klass.constantize.get_sidekiq_options['batch_reliable'] == true
-                  Sidekiq::Grouping::ReliableBatch.new(klass, queue)
-                else
-                  new(klass, queue)
-                end
+                Sidekiq::Grouping::ReliableBatch.new(klass, queue)
               rescue NameError
                 nil
               end

@@ -43,7 +43,7 @@ describe Sidekiq::Grouping::Redis do
     it "removes messages from queue" do
       subject.push_msg(queue_name, "Message 1")
       subject.push_msg(queue_name, "Message 2")
-      subject.reliable_pluck(queue_name, 2)
+      subject.reliable_pluck(queue_name, 1000)
       expect(redis { |c| c.llen key }).to eq 0
     end
 
@@ -64,7 +64,7 @@ describe Sidekiq::Grouping::Redis do
       expect(redis { |c| c.llen(pending_queue_name) }).to eq 2
     end
 
-    it "moves extra items back to the queue" do
+    it "keeps extra items in the queue" do
       subject.push_msg(queue_name, "Message 1", true)
       subject.push_msg(queue_name, "Message 2", true)
       subject.reliable_pluck(queue_name, 1)

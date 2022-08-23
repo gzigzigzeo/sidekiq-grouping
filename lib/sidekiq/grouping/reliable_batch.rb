@@ -5,7 +5,7 @@ module Sidekiq
         pending_name, chunk = pluck
         return unless chunk
 
-        Sidekiq::Client.push_bulk(
+        Sidekiq::Client.push(
           'class' => @worker_class,
           'queue' => @queue,
           'args' => [true, chunk]
