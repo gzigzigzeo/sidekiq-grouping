@@ -17,11 +17,15 @@ module Sidekiq
         local pending_jobs = KEYS[3]
         local current_time = KEYS[4]
         local this_job = KEYS[5]
-        local limit = ARGV[1]
+        local limit = tonumber(ARGV[1])
 
         redis.call('zadd', pending_jobs, current_time, this_job)
         local values = {}
-        for i = 1, math.min(limit, redis.call('llen', queue)) do 
+        local length = redis.call('llen', queue)
+        if limit > length then
+          limit = length
+        end
+        for i = 1, limit do 
           table.insert(values, redis.call('lmove', queue, this_job, 'left', 'right'))
         end
         redis.call('srem', unique_messages, unpack(values))
