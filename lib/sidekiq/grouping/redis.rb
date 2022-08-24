@@ -21,7 +21,7 @@ module Sidekiq
 
         redis.call('zadd', pending_jobs, current_time, this_job)
         local values = {}
-        for i = 1, math.min(limit, redis.call('llen', queue)) do 
+        for i = 1, math.min(limit, redis.call('llen', queue)) do
           table.insert(values, redis.call('lmove', queue, this_job, 'left', 'right'))
         end
         if #values > 0 then
