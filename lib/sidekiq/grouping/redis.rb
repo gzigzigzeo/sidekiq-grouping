@@ -21,14 +21,12 @@ module Sidekiq
 
         redis.call('zadd', pending_jobs, current_time, this_job)
         local values = {}
-        local length = redis.call('llen', queue)
-        if limit > length then
-          limit = length
-        end
-        for i = 1, limit do 
+        for i = 1, math.min(limit, redis.call('llen', queue)) do 
           table.insert(values, redis.call('lmove', queue, this_job, 'left', 'right'))
         end
-        redis.call('srem', unique_messages, unpack(values))
+        if #values > 0 then
+          redis.call('srem', unique_messages, unpack(values))
+        end
 
         return {this_job, values}
       LUA
