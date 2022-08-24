@@ -112,13 +112,14 @@ describe Sidekiq::Grouping::Redis do
       it "requeues expired jobs that are not already present" do
         subject.push_msg(queue_name, "Message 1", true)
         subject.push_msg(queue_name, "Message 2", true)
-        pending_queue_name, _ = subject.reliable_pluck(queue_name, 2)
+        subject.push_msg(queue_name, "Message 3", true)
+        pending_queue_name, _ = subject.reliable_pluck(queue_name, 3)
         expect(subject.requeue_expired(queue_name, true, 500).size).to eq 0
         redis { |c| c.zincrby pending_jobs, -1000, pending_queue_name }
-        subject.push_msg(queue_name, "Message 1", true)
+        subject.push_msg(queue_name, "Message 2", true)
         expect(subject.requeue_expired(queue_name, true, 500).size).to eq 1
-        expect(redis { |c| c.llen key }).to eq 2
-        expect(redis { |c| c.lrange(key, 0, -1) }).to match_array(["Message 1", "Message 2"])
+        expect(redis { |c| c.llen key }).to eq 3
+        expect(redis { |c| c.lrange(key, 0, -1) }).to match_array(["Message 1", "Message 2", "Message 3"])
       end
 
       it "removes pending job once enqueued" do

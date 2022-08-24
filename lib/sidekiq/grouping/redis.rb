@@ -50,10 +50,12 @@ module Sidekiq
         local unique_messages = KEYS[4]
 
         local to_requeue = redis.call('lrange', expired_queue, 0, -1)
-        for i = #to_requeue, 1, -1 do
+        for i = 1, #to_requeue do
           local message = to_requeue[i]
           if redis.call('sismember', unique_messages, message) == 0 then
-            redis.call('lmove', expired_queue, queue, 'right', 'left')
+            redis.call('lmove', expired_queue, queue, 'left', 'right')
+          else
+            redis.call('lpop', expired_queue)
           end
         end
         redis.call('zrem', pending_jobs, expired_queue)
