@@ -118,16 +118,12 @@ module Sidekiq
 
           redis.batches.map do |name|
             if Sidekiq::Grouping::Config.reliable
-              begin
-                klass, queue = extract_worker_klass_and_queue(name)
-                Sidekiq::Grouping::ReliableBatch.new(klass, queue)
-              rescue NameError
-                nil
-              end
+              klass, queue = extract_worker_klass_and_queue(name)
+              Sidekiq::Grouping::ReliableBatch.new(klass, queue)
             else
               new(*extract_worker_klass_and_queue(name))
             end
-          end.compact
+          end
         end
 
         def extract_worker_klass_and_queue(name)
