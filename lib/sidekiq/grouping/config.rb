@@ -20,6 +20,11 @@ module Sidekiq::Grouping::Config
     options[:lock_ttl] || 1
   end
 
+  # Use reliable queues
+  config_accessor :reliable do
+    options[:reliable] || false
+  end
+
   # Option to override how Sidekiq::Grouping know about tests env
   config_accessor :tests_env do
     options[:tests_env] || (

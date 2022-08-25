@@ -10,9 +10,11 @@ Useful for:
 * Grouping asynchronous API index calls into bulks for bulk updating/indexing.
 * Periodical batch updating of recently changing database counters.
 
-*NOTE:* As of 1.0 `batch_size` renamed to `batch_flush_size`.
-*NOTE:* As of 1.0.6 works with Sidekiq 4.
-*NOTE:* As of 1.0.8 Locking is atomic (set nx/ex) and will no longer lead to batches that are permalocked and stuck
+Please note:
+* As of 1.0 `batch_size` renamed to `batch_flush_size`.
+* As of 1.0.6 works with Sidekiq 4.
+* As of 1.0.8 Locking is atomic (set nx/ex) and will no longer lead to batches that are permalocked and stuck.
+* Enabling the `reliable` configuration option requires Redis 6.2 or higher.
 
 ## Usage
 
@@ -111,6 +113,8 @@ This jobs will be grouped into the single job with the single argument:
   # => [[5]]
   ```
 
+- `batch_ttl` is the number of seconds used by Supervisor to determine when a pending flush has expired and needs to be re-queued. Defaults to 3600.
+
 - `tests_env` is used to silence some logging in test environments (see below). Default: true if `Rails.env.test?`, false otherwise.
 
 ## Web UI
@@ -132,6 +136,7 @@ grouping:
   :poll_interval: 5       # Amount of time between polling batches
   :max_batch_size: 5000   # Maximum batch size allowed
   :lock_ttl: 1            # Batch queue flush lock timeout job enqueues
+  :reliable: true         # Enable reliable queueing and expired job supervisor
 ```
 
 Or set it in your code:
@@ -140,6 +145,7 @@ Or set it in your code:
 Sidekiq::Grouping::Config.poll_interval = 5
 Sidekiq::Grouping::Config.max_batch_size = 5000
 Sidekiq::Grouping::Config.lock_ttl = 1
+Sidekiq::Grouping::Config.reliable = true
 ```
 
 Note that you should set poll_interval option inside of sidekiq.yml to take effect. Setting this param in your ruby code won't change actual polling frequency.

@@ -23,6 +23,16 @@ describe Sidekiq::Grouping::Batch do
       BatchedBothWorker.perform_async('bar')
       expect_batch(BatchedBothWorker, 'batched_both')
     end
+
+    it 'must not enqueue batched worker' do
+      ReliableBatchedSizeWorker.perform_async('bar')
+      expect_batch(ReliableBatchedSizeWorker, 'reliable_batched_size')
+    end
+
+    it 'must not enqueue batched worker' do
+      ReliableBatchedUniqueSizeWorker.perform_async('bar')
+      expect_batch(ReliableBatchedUniqueSizeWorker, 'reliable_batched_unique_size')
+    end
   end
 
   context 'checking if should flush' do
@@ -61,7 +71,7 @@ describe Sidekiq::Grouping::Batch do
   end
 
   context 'flushing' do
-    it 'must put wokrer to queue on flush' do
+    it 'must put worker to queue on flush' do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
       expect(batch.could_flush?).to be_falsy

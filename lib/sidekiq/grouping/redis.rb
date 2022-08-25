@@ -11,6 +11,76 @@ module Sidekiq
         return pluck_values
       SCRIPT
 
+      RELIABLE_PLUCK_SCRIPT = <<-LUA
+        local queue = KEYS[1]
+        local unique_messages = KEYS[2]
+        local pending_jobs = KEYS[3]
+        local current_time = KEYS[4]
+        local this_job = KEYS[5]
+        local limit = tonumber(ARGV[1])
+
+        redis.call('zadd', pending_jobs, current_time, this_job)
+        local values = {}
+        for i = 1, math.min(limit, redis.call('llen', queue)) do
+          table.insert(values, redis.call('lmove', queue, this_job, 'left', 'right'))
+        end
+        if #values > 0 then
+          redis.call('srem', unique_messages, unpack(values))
+        end
+
+        return {this_job, values}
+      LUA
+
+      REQUEUE_SCRIPT = <<-LUA
+        local expired_queue = KEYS[1]
+        local queue = KEYS[2]
+        local pending_jobs = KEYS[3]
+
+        local to_requeue = redis.call('llen', expired_queue)
+        for i = 1, to_requeue do
+          redis.call('lmove', expired_queue, queue, 'left', 'right')
+        end
+        redis.call('zrem', pending_jobs, expired_queue)
+      LUA
+
+      UNIQUE_REQUEUE_SCRIPT = <<-LUA
+        local expired_queue = KEYS[1]
+        local queue = KEYS[2]
+        local pending_jobs = KEYS[3]
+        local unique_messages = KEYS[4]
+
+        local to_requeue = redis.call('lrange', expired_queue, 0, -1)
+        for i = 1, #to_requeue do
+          local message = to_requeue[i]
+          if redis.call('sismember', unique_messages, message) == 0 then
+            redis.call('lmove', expired_queue, queue, 'left', 'right')
+          else
+            redis.call('lpop', expired_queue)
+          end
+        end
+        redis.call('zrem', pending_jobs, expired_queue)
+      LUA
+
+      def initialize
+        scripts = {
+          pluck: PLUCK_SCRIPT,
+          reliable_pluck: RELIABLE_PLUCK_SCRIPT,
+          requeue: REQUEUE_SCRIPT,
+          unique_requeue: UNIQUE_REQUEUE_SCRIPT
+        }
+
+        @script_hashes = {
+          pluck: nil,
+          reliable_pluck: nil,
+          requeue: nil,
+          unique_requeue: nil
+        }
+
+        scripts.each_pair do |key, value|
+          @script_hashes[key] = redis { |conn| conn.script(:load, value) }
+        end
+      end
+
       def push_msg(name, msg, remember_unique = false)
         redis do |conn|
           conn.multi do |pipeline|
@@ -38,7 +108,13 @@ module Sidekiq
       def pluck(name, limit)
         keys = [ns(name), unique_messages_key(name)]
         args = [limit]
-        redis { |conn| conn.eval PLUCK_SCRIPT, keys, args }
+        redis { |conn| conn.evalsha @script_hashes[:pluck], keys, args }
+      end
+
+      def reliable_pluck(name, limit)
+        keys = [ns(name), unique_messages_key(name), pending_jobs(name), Time.now.to_i, this_job_name(name)]
+        args = [limit]
+        redis { |conn| conn.evalsha @script_hashes[:reliable_pluck], keys, args }
       end
 
       def get_last_execution_time(name)
@@ -64,10 +140,33 @@ module Sidekiq
         end
       end
 
+      def remove_from_pending(name, batch_name)
+        redis { |conn| conn.zrem(pending_jobs(name), batch_name) }
+      end
+
+      def requeue_expired(name, unique = false, ttl = 3600)
+        redis do |conn|
+          conn.zrangebyscore(pending_jobs(name), '0', Time.now.to_i - ttl).each do |expired|
+            keys = [expired, ns(name), pending_jobs(name), unique_messages_key(name)]
+            args = []
+            script = unique ? @script_hashes[:unique_requeue] : @script_hashes[:requeue]
+            conn.evalsha script, keys, args
+          end
+        end
+      end
+
       private
 
       def unique_messages_key name
         ns("#{name}:unique_messages")
+      end
+
+      def pending_jobs name
+        ns("#{name}:pending_jobs")
+      end
+
+      def this_job_name name
+        ns("#{name}:#{SecureRandom.hex}")
       end
 
       def ns(key = nil)
