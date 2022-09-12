@@ -2,8 +2,6 @@ module Sidekiq
   module Grouping
     class Middleware
       def call(worker_class, msg, queue, redis_pool = nil)
-        return yield if (defined?(Sidekiq::Testing) && Sidekiq::Testing.inline?)
-
         worker_class = worker_class.camelize.constantize if worker_class.is_a?(String)
         options = worker_class.get_sidekiq_options
 
@@ -20,6 +18,13 @@ module Sidekiq
         retrying = msg["failed_at"].present?
 
         return yield unless batch
+
+        inline_mode = defined?(Sidekiq::Testing) && Sidekiq::Testing.inline?
+        if inline_mode
+          wrapped_args = [[msg['args']]]
+          msg['args'] = wrapped_args
+          return yield
+        end
 
         if !(passthrough || retrying)
           add_to_batch(worker_class, queue, msg, redis_pool)

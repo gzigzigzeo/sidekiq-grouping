@@ -61,7 +61,7 @@ describe Sidekiq::Grouping::Batch do
   end
 
   context 'flushing' do
-    it 'must put wokrer to queue on flush' do
+    it 'must put worker to queue on flush' do
       batch = subject.new(BatchedSizeWorker.name, 'batched_size')
 
       expect(batch.could_flush?).to be_falsy
@@ -120,6 +120,24 @@ describe Sidekiq::Grouping::Batch do
         batch = subject.new(BatchedSizeWorker.name, 'batched_size')
         3.times { BatchedSizeWorker.perform_async('bar', 1) }
         expect(batch.size).to eq(3)
+      end
+    end
+  end
+
+  context 'inline mode' do
+    it 'must pass args to worker as array' do
+      Sidekiq::Testing.inline! do
+        expect_any_instance_of(BatchedSizeWorker).to receive(:perform).with([[1]])
+
+        BatchedSizeWorker.perform_async(1)
+      end
+    end
+
+    it 'must not pass args to worker as array' do
+      Sidekiq::Testing.inline! do
+        expect_any_instance_of(RegularWorker).to receive(:perform).with(1)
+
+        RegularWorker.perform_async(1)
       end
     end
   end
