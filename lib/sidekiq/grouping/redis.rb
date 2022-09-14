@@ -143,8 +143,8 @@ module Sidekiq
       def remove_from_pending(name, batch_name)
         redis do |conn|
           conn.multi do |pipeline|
-            pipeline.zrem(pending_jobs(name), batch_name)
             pipeline.del(batch_name)
+            pipeline.zrem(pending_jobs(name), batch_name)
           end
         end
       end
