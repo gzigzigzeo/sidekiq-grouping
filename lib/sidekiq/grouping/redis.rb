@@ -141,7 +141,12 @@ module Sidekiq
       end
 
       def remove_from_pending(name, batch_name)
-        redis { |conn| conn.zrem(pending_jobs(name), batch_name) }
+        redis do |conn|
+          conn.multi do |pipeline|
+            pipeline.del(batch_name)
+            pipeline.zrem(pending_jobs(name), batch_name)
+          end
+        end
       end
 
       def requeue_expired(name, unique = false, ttl = 3600)
