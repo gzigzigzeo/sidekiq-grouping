@@ -80,8 +80,11 @@ describe Sidekiq::Grouping::Redis do
       subject.push_msg(queue_name, "Message 1", true)
       subject.push_msg(queue_name, "Message 2", true)
       pending_queue_name, _ = subject.reliable_pluck(queue_name, 2)
+      expect(redis { |c| c.lrange(pending_queue_name, 0, -1) }).to eq(['Message 1', 'Message 2'])
       subject.remove_from_pending(queue_name, pending_queue_name)
       expect(redis { |c| c.zcount(pending_jobs, 0, Time.now.utc.to_i) }).to eq 0
+      expect(redis { |c| c.lrange(pending_queue_name, 0, -1) }).to eq([])
+      expect(redis { |c| c.keys('*') }).not_to include(pending_queue_name)
     end
   end
 
