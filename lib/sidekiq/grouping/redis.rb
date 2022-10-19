@@ -4,8 +4,8 @@ module Sidekiq
 
       PLUCK_SCRIPT = <<-SCRIPT
         local pluck_values = redis.call('lpop', KEYS[1], ARGV[1]) or {}
-        if #pluck_values > 0 then 
-          redis.call('srem', KEYS[2], unpack(pluck_values)) 
+        if #pluck_values > 0 then
+          redis.call('srem', KEYS[2], unpack(pluck_values))
         end
         return pluck_values
       SCRIPT
