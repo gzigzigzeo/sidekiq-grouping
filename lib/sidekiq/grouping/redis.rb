@@ -3,10 +3,9 @@ module Sidekiq
     class Redis
 
       PLUCK_SCRIPT = <<-SCRIPT
-        local pluck_values = redis.call('lrange', KEYS[1], 0, ARGV[1] - 1)
-        redis.call('ltrim', KEYS[1], ARGV[1], -1)
-        for k, v in pairs(pluck_values) do
-          redis.call('srem', KEYS[2], v)
+        local pluck_values = redis.call('lpop', KEYS[1], ARGV[1]) or {}
+        if #pluck_values > 0 then 
+          redis.call('srem', KEYS[2], unpack(pluck_values)) 
         end
         return pluck_values
       SCRIPT
