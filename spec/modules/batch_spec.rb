@@ -42,9 +42,29 @@ describe Sidekiq::Grouping::Batch do
         expect(mock_redis).to receive(:push_messages).with(anything, messages[0..999], anything).and_call_original
         expect(mock_redis).to receive(:push_messages).with(anything, messages[1000..1005], anything).and_call_original
 
-        BatchedBulkInsertWorker.perform_async(*messages)
+        BatchedBulkInsertWorker.perform_async(messages)
         batch = subject.new(BatchedBulkInsertWorker.name, 'batched_bulk_insert')
         expect(batch.size).to eq(1006)
+      end
+
+      it 'raises an exception if argument is not an array' do
+        failed = false
+        begin
+          BatchedBulkInsertWorker.perform_async('potato')
+        rescue StandardError => e
+          failed = true
+        end
+        expect(failed).to be_truthy
+      end
+
+      it 'raises an exception if argument is not a single-item array' do
+        failed = false
+        begin
+          BatchedBulkInsertWorker.perform_async(['potato'], ['tomato'])
+        rescue StandardError => e
+          failed = true
+        end
+        expect(failed).to be_truthy
       end
     end
   end
