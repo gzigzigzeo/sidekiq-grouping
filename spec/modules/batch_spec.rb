@@ -57,7 +57,7 @@ describe Sidekiq::Grouping::Batch do
         expect(failed).to be_truthy
       end
 
-      it 'raises an exception if argument is not a single-item array' do
+      it 'raises an exception if argument is not a single array' do
         failed = false
         begin
           BatchedBulkInsertWorker.perform_async(['potato'], ['tomato'])
