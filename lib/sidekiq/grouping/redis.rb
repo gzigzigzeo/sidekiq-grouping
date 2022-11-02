@@ -61,19 +61,50 @@ module Sidekiq
         redis.call('zrem', pending_jobs, expired_queue)
       LUA
 
+      MERGE_ARRAY_SCRIPT = <<-LUA
+        local batches = KEYS[1]
+        local name = KEYS[2]
+        local namespaced_name = KEYS[3]
+        local unique_messages_key = KEYS[4]
+        local remember_unique = KEYS[5]
+        local messages = ARGV
+
+        if remember_unique == 'true' then
+          local existing_messages = redis.call('smismember', unique_messages_key, unpack(messages))
+          local result = {}
+          
+          for index, value in ipairs(messages) do
+            if existing_messages[index] == 0 then
+              result[#result + 1] = value
+            end
+          end
+          
+          messages = result
+        end
+
+        redis.call('sadd', batches, name)
+        redis.call('rpush', namespaced_name, unpack(messages))
+        if remember_unique == 'true' then
+          redis.call('sadd', unique_messages_key, unpack(messages))
+        end
+      LUA
+
+
       def initialize
         scripts = {
           pluck: PLUCK_SCRIPT,
           reliable_pluck: RELIABLE_PLUCK_SCRIPT,
           requeue: REQUEUE_SCRIPT,
-          unique_requeue: UNIQUE_REQUEUE_SCRIPT
+          unique_requeue: UNIQUE_REQUEUE_SCRIPT,
+          merge_array: MERGE_ARRAY_SCRIPT
         }
 
         @script_hashes = {
           pluck: nil,
           reliable_pluck: nil,
           requeue: nil,
-          unique_requeue: nil
+          unique_requeue: nil,
+          merge_array: nil
         }
 
         scripts.each_pair do |key, value|
@@ -89,6 +120,12 @@ module Sidekiq
             pipeline.sadd(unique_messages_key(name), msg) if remember_unique
           end
         end
+      end
+
+      def push_messages(name, messages, remember_unique = false)
+        keys = [ns('batches'), name, ns(name), unique_messages_key(name), remember_unique]
+        args = [messages]
+        redis { |conn| conn.evalsha @script_hashes[:merge_array], keys, args }
       end
 
       def enqueued?(name, msg)

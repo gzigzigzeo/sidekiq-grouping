@@ -32,10 +32,11 @@ module Sidekiq
       private
 
       def add_to_batch(worker_class, queue, msg, redis_pool = nil)
+        add_method = worker_class.get_sidekiq_options['batch_merge_array'] ? :merge : :add
+
         Sidekiq::Grouping::Batch
           .new(worker_class.name, queue, redis_pool)
-          .add(msg['args'])
-
+          .public_send(add_method, msg['args'])
         nil
       end
     end

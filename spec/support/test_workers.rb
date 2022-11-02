@@ -66,3 +66,14 @@ class ReliableBatchedUniqueSizeWorker
   def perform(foo)
   end
 end
+
+class BatchedBulkInsertWorker
+  include Sidekiq::Worker
+
+  sidekiq_options(
+    queue: :batched_bulk_insert, batch_flush_size: 3, batch_size: 2, batch_ttl: 10, batch_merge_array: true
+  )
+
+  def perform(foo)
+  end
+end

@@ -20,6 +20,13 @@ module Sidekiq
         !@redis.enqueued?(@name, msg)
       end
 
+      def merge(messages)
+        # messages is expected to be an array of elements that would normally be added using Sidekiq::Grouping::Batch#add
+        messages.each_slice(1000) do |slice|
+          @redis.push_messages(@name, slice, enqueue_similar_once?)
+        end
+      end
+
       def size
         @redis.batch_size(@name)
       end

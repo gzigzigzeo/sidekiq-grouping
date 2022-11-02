@@ -138,6 +138,29 @@ describe Sidekiq::Grouping::Redis do
     end
   end
 
+  describe '#push_messages' do
+    it "adds messages to queue" do
+      subject.push_messages(queue_name, ['My message', 'My other message', 'My last message'])
+      expect(redis { |c| c.llen key }).to eq 3
+      expect(redis { |c| c.lrange key, 0, 3 }).to eq ['My message', 'My other message', 'My last message']
+      expect(redis { |c| c.smembers unique_key}).to eq []
+    end
+
+    it "remembers unique messages if specified" do
+      subject.push_messages(queue_name, ['My message', 'My other message', 'My last message'], true)
+      expect(redis { |c| c.lrange key, 0, 3 }).to eq ['My message', 'My other message', 'My last message']
+      expect(redis { |c| c.smembers unique_key}).to match_array ['My message', 'My other message', 'My last message']
+    end
+
+    it "adds new messages in order" do
+      subject.push_messages(queue_name, ['My message'], true)
+      expect(redis { |c| c.smembers unique_key}).to match_array ['My message']
+      subject.push_messages(queue_name, ['My other message', 'My message', 'My last message'], true)
+      expect(redis { |c| c.lrange key, 0, 3 }).to eq ['My message', 'My other message', 'My last message']
+      expect(redis { |c| c.smembers unique_key}).to match_array ['My message', 'My other message', 'My last message']
+    end
+  end
+
   private
 
   def redis(&block)

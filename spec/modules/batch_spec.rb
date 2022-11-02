@@ -33,6 +33,20 @@ describe Sidekiq::Grouping::Batch do
       ReliableBatchedUniqueSizeWorker.perform_async('bar')
       expect_batch(ReliableBatchedUniqueSizeWorker, 'reliable_batched_unique_size')
     end
+
+    context 'in bulk' do
+      it 'inserts in batches' do
+        messages = (0..1005).map(&:to_s)
+        mock_redis = Sidekiq::Grouping::Redis.new
+        allow(Sidekiq::Grouping::Redis).to receive(:new).and_return(mock_redis)
+        expect(mock_redis).to receive(:push_messages).with(anything, messages[0..999], anything).and_call_original
+        expect(mock_redis).to receive(:push_messages).with(anything, messages[1000..1005], anything).and_call_original
+
+        BatchedBulkInsertWorker.perform_async(*messages)
+        batch = subject.new(BatchedBulkInsertWorker.name, 'batched_bulk_insert')
+        expect(batch.size).to eq(1006)
+      end
+    end
   end
 
   context 'checking if should flush' do
