@@ -36,7 +36,7 @@ module Sidekiq
 
         Sidekiq::Grouping::Batch
           .new(worker_class.name, queue, redis_pool)
-          .send(add_method, msg['args'])
+          .public_send(add_method, msg['args'])
         nil
       end
     end

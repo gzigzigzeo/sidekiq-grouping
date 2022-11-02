@@ -22,8 +22,9 @@ module Sidekiq
 
       def merge(messages)
         # messages is expected to be an array of elements that would normally be added using Sidekiq::Grouping::Batch#add
-        messages = messages.to_json
-        @redis.push_messages(@name, messages, enqueue_similar_once?)
+        messages.each_slice(1000) do |slice|
+          @redis.push_messages(@name, slice, enqueue_similar_once?)
+        end
       end
 
       def size
