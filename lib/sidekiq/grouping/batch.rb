@@ -28,7 +28,7 @@ module Sidekiq
         raise "batch_merge_array worker received type #{messages.class.name}. Expected Array." unless messages.is_a?(Array)
 
         messages.each_slice(1000) do |slice|
-          @redis.push_messages(@name, slice, enqueue_similar_once?)
+          @redis.push_messages(@name, slice.to_json, enqueue_similar_once?)
         end
       end
 
