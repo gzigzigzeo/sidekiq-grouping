@@ -39,8 +39,8 @@ describe Sidekiq::Grouping::Batch do
         messages = (0..1005).map(&:to_s)
         mock_redis = Sidekiq::Grouping::Redis.new
         allow(Sidekiq::Grouping::Redis).to receive(:new).and_return(mock_redis)
-        expect(mock_redis).to receive(:push_messages).with(anything, messages[0..999], anything).and_call_original
-        expect(mock_redis).to receive(:push_messages).with(anything, messages[1000..1005], anything).and_call_original
+        expect(mock_redis).to receive(:push_messages).with(anything, messages[0..999].map(&:to_json), anything).and_call_original
+        expect(mock_redis).to receive(:push_messages).with(anything, messages[1000..1005].map(&:to_json), anything).and_call_original
 
         BatchedBulkInsertWorker.perform_async(messages)
         batch = subject.new(BatchedBulkInsertWorker.name, 'batched_bulk_insert')
