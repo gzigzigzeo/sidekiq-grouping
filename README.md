@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/sidekiq-grouping.svg)](https://rubygems.org/gems/sidekiq-grouping)
+
 # Sidekiq::Grouping
 
 <a href="https://evilmartians.com/?utm_source=sidekiq-grouping-gem">
@@ -13,6 +15,26 @@ Useful for:
 *NOTE:* As of 1.0 `batch_size` renamed to `batch_flush_size`.
 *NOTE:* As of 1.0.6 works with Sidekiq 4.
 *NOTE:* As of 1.0.8 Locking is atomic (set nx/ex) and will no longer lead to batches that are permalocked and stuck
+
+## Installation
+
+Add this line to your application's Gemfile:
+
+    gem 'sidekiq-grouping'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install sidekiq-grouping
+
+If you're using the gem outside of Rails, run Grouping when application is initialized:
+
+```ruby
+Sidekiq::Grouping.start! if Sidekiq.server?
+```
 
 ## Usage
 
@@ -194,20 +216,6 @@ RSpec.describe GroupedWorker, type: :worker do
 end
 
 ```
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'sidekiq-grouping'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install sidekiq-grouping
 
 ## Contributing
 

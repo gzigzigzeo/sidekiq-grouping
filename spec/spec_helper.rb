@@ -15,8 +15,10 @@ end
 require "sidekiq/grouping"
 
 Sidekiq::Grouping.logger = nil
-Sidekiq.redis = { namespace: ENV["namespace"] }
-Sidekiq.logger = nil
+Sidekiq.configure_client do |config|
+  config.redis = { db: 1 }
+  config.logger = nil
+end
 
 RSpec::Sidekiq.configure do |config|
   config.clear_all_enqueued_jobs = true
@@ -30,8 +32,8 @@ RSpec.configure do |config|
 
   config.before :each do
     Sidekiq.redis do |conn|
-      keys = conn.keys "*batching*"
-      keys.each { |key| conn.del key }
+      keys = conn.call('KEYS', "*batching*")
+      keys.each { |key| conn.call('DEL', key) }
     end
   end
 
