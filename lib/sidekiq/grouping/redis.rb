@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Sidekiq
   module Grouping
     class Redis
-
       PLUCK_SCRIPT = <<-SCRIPT
         local pluck_values = redis.call('lpop', KEYS[1], ARGV[1]) or {}
         if #pluck_values > 0 then
@@ -10,7 +11,7 @@ module Sidekiq
         return pluck_values
       SCRIPT
 
-      def push_msg(name, msg, remember_unique = false)
+      def push_msg(name, msg, remember_unique: false)
         redis do |conn|
           conn.multi do |pipeline|
             pipeline.sadd?(ns("batches"), name)
@@ -59,13 +60,13 @@ module Sidekiq
         redis do |conn|
           conn.del(ns("last_execution_time:#{name}"))
           conn.del(ns(name))
-          conn.srem(ns('batches'), name)
+          conn.srem(ns("batches"), name)
         end
       end
 
       private
 
-      def unique_messages_key name
+      def unique_messages_key(name)
         ns("#{name}:unique_messages")
       end
 
