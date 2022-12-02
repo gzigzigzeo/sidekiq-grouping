@@ -10,11 +10,15 @@ module Sidekiq
       def self.registered(app)
         app.get "/grouping" do
           @batches = Sidekiq::Grouping::Batch.all
-          erb File.read(File.join(VIEWS, "index.erb")), locals: { view_path: VIEWS }
+          erb File.read(File.join(VIEWS, "index.erb")),
+              locals: { view_path: VIEWS }
         end
 
         app.post "/grouping/:name/delete" do
-          worker_class, queue = Sidekiq::Grouping::Batch.extract_worker_klass_and_queue(params["name"])
+          worker_class, queue =
+            Sidekiq::Grouping::Batch.extract_worker_klass_and_queue(
+              params["name"]
+            )
           batch = Sidekiq::Grouping::Batch.new(worker_class, queue)
           batch.delete
           redirect "#{root_path}grouping"

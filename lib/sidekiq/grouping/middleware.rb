@@ -5,7 +5,9 @@ module Sidekiq
     class Middleware
       # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
       def call(worker_class, msg, queue, redis_pool = nil)
-        worker_class = worker_class.camelize.constantize if worker_class.is_a?(String)
+        if worker_class.is_a?(String)
+          worker_class = worker_class.camelize.constantize
+        end
         options = worker_class.get_sidekiq_options
 
         batch =

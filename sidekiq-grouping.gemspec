@@ -9,7 +9,9 @@ Gem::Specification.new do |spec|
   spec.version       = Sidekiq::Grouping::VERSION
   spec.authors       = ["Victor Sokolov"]
   spec.email         = ["gzigzigzeo@gmail.com"]
-  spec.summary       = "Allows identical sidekiq jobs to be processed with a single background call"
+  spec.summary       = <<~SUMMARY
+    Allows identical sidekiq jobs to be processed with a single background call
+  SUMMARY
   spec.homepage      = "http://github.com/gzigzigzeo/sidekiq-grouping"
   spec.license       = "MIT"
 

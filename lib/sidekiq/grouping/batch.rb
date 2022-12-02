@@ -14,7 +14,13 @@ module Sidekiq
 
       def add(msg)
         msg = msg.to_json
-        @redis.push_msg(@name, msg, remember_unique: enqueue_similar_once?) if should_add? msg
+        return unless should_add? msg
+
+        @redis.push_msg(
+          @name,
+          msg,
+          remember_unique: enqueue_similar_once?
+        )
       end
 
       def should_add?(msg)

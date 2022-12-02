@@ -10,17 +10,17 @@ module Sidekiq
         flush_batches(batches)
       end
 
-      def force_flush_for_test! # rubocop:disable Metrics/MethodLength
+      def force_flush_for_test!
         unless Sidekiq::Grouping::Config.tests_env
           Sidekiq::Grouping.logger.warn(
             "**************************************************"
           )
-          Sidekiq::Grouping.logger.warn([
-            "⛔️ force_flush_for_test! for testing API, ",
-            "but this is not the test environment. ",
-            "Please check your environment or ",
+          Sidekiq::Grouping.logger.warn(
+            "⛔️ force_flush_for_test! for testing API, " \
+            "but this is not the test environment. " \
+            "Please check your environment or " \
             "change 'tests_env' to cover this one"
-          ].join)
+          )
           Sidekiq::Grouping.logger.warn(
             "**************************************************"
           )
@@ -38,10 +38,13 @@ module Sidekiq
       def flush_concrete(batches)
         return if batches.empty?
 
-        names = batches.map { |batch| "#{batch.worker_class} in #{batch.queue}" }
+        names = batches.map do |batch|
+          "#{batch.worker_class} in #{batch.queue}"
+        end
         unless Sidekiq::Grouping::Config.tests_env
           Sidekiq::Grouping.logger.info(
-            "[Sidekiq::Grouping] Trying to flush batched queues: #{names.join(',')}"
+            "[Sidekiq::Grouping] Trying to flush batched queues: " \
+            "#{names.join(',')}"
           )
         end
         batches.each(&:flush)

@@ -35,7 +35,8 @@ module Sidekiq
         ) { Sidekiq::Grouping::Flusher.new.flush }
         @task.add_observer(@observer)
         logger.info(
-          "[Sidekiq::Grouping] Started polling batches every #{interval} seconds"
+          "[Sidekiq::Grouping] Started polling batches every " \
+          "#{interval} seconds"
         )
         @task.execute
       end

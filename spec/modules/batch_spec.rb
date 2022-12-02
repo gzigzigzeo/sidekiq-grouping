@@ -21,7 +21,7 @@ describe Sidekiq::Grouping::Batch do
       expect_batch(BatchedIntervalWorker, "batched_interval")
     end
 
-    it "must not enqueue batched worker based on interval and batch size settings" do
+    it "must not enqueue batched worker based on both settings" do
       BatchedBothWorker.perform_async("bar")
       expect_batch(BatchedBothWorker, "batched_both")
     end
@@ -79,13 +79,19 @@ describe Sidekiq::Grouping::Batch do
   context "with similar args" do
     context "when option batch_unique = true" do
       it "enqueues once" do
-        batch = batch_service.new(BatchedUniqueArgsWorker.name, "batched_unique_args")
+        batch = batch_service.new(
+          BatchedUniqueArgsWorker.name,
+          "batched_unique_args"
+        )
         3.times { BatchedUniqueArgsWorker.perform_async("bar", 1) }
         expect(batch.size).to eq(1)
       end
 
       it "enqueues once each unique set of args" do
-        batch = batch_service.new(BatchedUniqueArgsWorker.name, "batched_unique_args")
+        batch = batch_service.new(
+          BatchedUniqueArgsWorker.name,
+          "batched_unique_args"
+        )
         3.times { BatchedUniqueArgsWorker.perform_async("bar", 1) }
         6.times { BatchedUniqueArgsWorker.perform_async("baz", 1) }
         3.times { BatchedUniqueArgsWorker.perform_async("bar", 1) }
@@ -95,7 +101,10 @@ describe Sidekiq::Grouping::Batch do
       end
 
       it "flushes the workers" do
-        batch = batch_service.new(BatchedUniqueArgsWorker.name, "batched_unique_args")
+        batch = batch_service.new(
+          BatchedUniqueArgsWorker.name,
+          "batched_unique_args"
+        )
         2.times { BatchedUniqueArgsWorker.perform_async("bar", 1) }
         2.times { BatchedUniqueArgsWorker.perform_async("baz", 1) }
         batch.flush
@@ -103,7 +112,10 @@ describe Sidekiq::Grouping::Batch do
       end
 
       it "allows to enqueue again after flush" do
-        batch = batch_service.new(BatchedUniqueArgsWorker.name, "batched_unique_args")
+        batch = batch_service.new(
+          BatchedUniqueArgsWorker.name,
+          "batched_unique_args"
+        )
         2.times { BatchedUniqueArgsWorker.perform_async("bar", 1) }
         2.times { BatchedUniqueArgsWorker.perform_async("baz", 1) }
         batch.flush
@@ -125,7 +137,8 @@ describe Sidekiq::Grouping::Batch do
   context "when inline mode" do
     it "must pass args to worker as array" do
       Sidekiq::Testing.inline! do
-        expect_any_instance_of(BatchedSizeWorker).to receive(:perform).with([[1]])
+        expect_any_instance_of(BatchedSizeWorker)
+          .to receive(:perform).with([[1]])
 
         BatchedSizeWorker.perform_async(1)
       end

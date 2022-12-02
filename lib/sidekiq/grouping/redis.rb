@@ -17,7 +17,13 @@ module Sidekiq
             method = pipeline.respond_to?(:sadd?) ? :sadd? : :sadd
             pipeline.public_send(method, ns("batches"), name)
             pipeline.rpush(ns(name), msg)
-            pipeline.public_send(method, unique_messages_key(name), msg) if remember_unique
+            if remember_unique
+              pipeline.public_send(
+                method,
+                unique_messages_key(name),
+                msg
+              )
+            end
           end
         end
       end
@@ -47,7 +53,9 @@ module Sidekiq
       end
 
       def set_last_execution_time(name, time)
-        redis { |conn| conn.set(ns("last_execution_time:#{name}"), time.to_json) }
+        redis do |conn|
+          conn.set(ns("last_execution_time:#{name}"), time.to_json)
+        end
       end
 
       def lock(name)
