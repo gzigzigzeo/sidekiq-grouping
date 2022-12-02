@@ -1,0 +1,6 @@
+pre-commit:
+  commands:
+    rubocop:
+      glob: "*.rb"
+      run: bundle exec rubocop -A {staged_files} && git add {staged_files}
+
