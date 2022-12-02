@@ -7,14 +7,16 @@ pre-commit:
   parallel: true
   commands:
     appraisal:
-      glob: 'Appraisals'
+      glob: "Appraisals"
       files: git diff --name-only master
       run: bundle exec appraisal install && git add gemfiles/*.gemfile
     rubocop:
-      glob: "*.rb"
+      glob: "{*.rb,*.gemspec,Gemfile,Rakefile}"
       run: bundle exec rubocop -A {staged_files} && git add {staged_files}
 
 pre-push:
   commands:
     rspec:
+      glob: "*.rb"
+      files: git diff --name-only master
       run: bundle exec appraisal rspec
