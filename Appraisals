@@ -14,6 +14,6 @@ appraise 'sidekiq-5.0' do
   gem 'sidekiq', '~> 5.0.0'
 end
 
-appraise 'sidekiq-master' do
-  gem 'sidekiq', github: 'mperham/sidekiq'
+appraise 'sidekiq-6.5' do
+  gem 'sidekiq', '~> 6.0.0'
 end
