@@ -1,8 +1,15 @@
+---
 require: rubocop-rspec
 
 AllCops:
+  TargetRubyVersion: 2.7.0
+  SuggestExtensions: false
+  NewCops: enable
   Include:
     - ./Gemfile
+    - ./Rakefile
+    - '*.gemspec'
+    - '**/*.rb'
 
 Documentation:
   Enabled: false
@@ -10,8 +17,29 @@ Documentation:
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
-Style/ClassAndModuleChildren:
-  EnforcedStyle: compact
-
 RSpec/FilePath:
   Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/ClassLength:
+  Max: 150
+
+Layout/LineLength:
+  Max: 80
+
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
+Layout/FirstMethodArgumentLineBreak:
+  Enabled: true
+
+Layout/MultilineMethodArgumentLineBreaks:
+  Enabled: true

@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Sidekiq
   module Grouping
     class Redis
-
       PLUCK_SCRIPT = <<-SCRIPT
         local pluck_values = redis.call('lpop', KEYS[1], ARGV[1]) or {}
         if #pluck_values > 0 then
@@ -10,12 +11,19 @@ module Sidekiq
         return pluck_values
       SCRIPT
 
-      def push_msg(name, msg, remember_unique = false)
+      def push_msg(name, msg, remember_unique: false)
         redis do |conn|
           conn.multi do |pipeline|
-            pipeline.sadd?(ns("batches"), name)
+            sadd = pipeline.respond_to?(:sadd?) ? :sadd? : :sadd
+            pipeline.public_send(sadd, ns("batches"), name)
             pipeline.rpush(ns(name), msg)
-            pipeline.sadd?(unique_messages_key(name), msg) if remember_unique
+            if remember_unique
+              pipeline.public_send(
+                sadd,
+                unique_messages_key(name),
+                msg
+              )
+            end
           end
         end
       end
@@ -45,7 +53,9 @@ module Sidekiq
       end
 
       def set_last_execution_time(name, time)
-        redis { |conn| conn.set(ns("last_execution_time:#{name}"), time.to_json) }
+        redis do |conn|
+          conn.set(ns("last_execution_time:#{name}"), time.to_json)
+        end
       end
 
       def lock(name)
@@ -59,13 +69,13 @@ module Sidekiq
         redis do |conn|
           conn.del(ns("last_execution_time:#{name}"))
           conn.del(ns(name))
-          conn.srem(ns('batches'), name)
+          conn.srem(ns("batches"), name)
         end
       end
 
       private
 
-      def unique_messages_key name
+      def unique_messages_key(name)
         ns("#{name}:unique_messages")
       end
 

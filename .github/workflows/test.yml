@@ -1,0 +1,49 @@
+---
+name: Test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  rspec:
+    name: Rspec
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    strategy:
+      matrix:
+        include:
+          - { ruby_version: 2.7 }
+          - { ruby_version: 3.0 }
+          - { ruby_version: 3.1 }
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Ruby ${{ matrix.ruby_version }}
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler: 2
+          ruby-version: ${{ matrix.ruby_version }}
+
+      # Appraisal doesn't support vendored install
+      # See: https://github.com/thoughtbot/appraisal/issues/173
+      #      https://github.com/thoughtbot/appraisal/pull/174
+      - name: Bundle install
+        run: |
+          bundle install --jobs 4 --retry 3
+          bundle exec appraisal install
+
+      - name: Run tests
+        run: bundle exec appraisal rspec
