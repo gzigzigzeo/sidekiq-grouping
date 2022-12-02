@@ -8,3 +8,8 @@ pre-commit:
     rubocop:
       glob: "*.rb"
       run: bundle exec rubocop -A {staged_files} && git add {staged_files}
+
+pre-push:
+  commands:
+    rspec:
+      run: bundle exec appraisal rspec
