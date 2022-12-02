@@ -9,6 +9,7 @@ require "simplecov"
 require "sidekiq"
 require "rspec-sidekiq"
 require "support/test_workers"
+require "pry"
 
 SimpleCov.start do
   add_filter "spec"
@@ -17,8 +18,10 @@ end
 require "sidekiq/grouping"
 
 Sidekiq::Grouping.logger = nil
-Sidekiq.redis = { db: ENV.fetch("db", 1) }
-Sidekiq.logger = nil
+Sidekiq.configure_client do |config|
+  config.redis = { db: 1 }
+  config.logger = nil
+end
 
 RSpec::Sidekiq.configure do |config|
   config.clear_all_enqueued_jobs = true
@@ -32,8 +35,13 @@ RSpec.configure do |config|
 
   config.before do
     Sidekiq.redis do |conn|
-      keys = conn.keys "*batching*"
-      keys.each { |key| conn.del key }
+      if Sidekiq::VERSION[0].to_i >= 7
+        keys = conn.call("KEYS", "*batching*")
+        keys.each { |key| conn.call("DEL", key) }
+      else
+        keys = conn.keys "*batching*"
+        keys.each { |key| conn.del key }
+      end
     end
   end
 

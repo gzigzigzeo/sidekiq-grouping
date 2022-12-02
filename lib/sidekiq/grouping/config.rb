@@ -6,10 +6,12 @@ module Sidekiq
       include ActiveSupport::Configurable
 
       def self.options
-        if Sidekiq.respond_to?(:[])
-          Sidekiq[:grouping] || Sidekiq["grouping"] || {}
-        else
+        if Sidekiq.respond_to?(:[]) # Sidekiq 6.x
+          Sidekiq[:grouping] || {}
+        elsif Sidekiq.respond_to?(:options) # Sidekiq <= 5.x
           Sidekiq.options[:grouping] || Sidekiq.options["grouping"] || {}
+        else # Sidekiq 7.x
+          Sidekiq.default_configuration[:grouping] || {}
         end
       end
 
