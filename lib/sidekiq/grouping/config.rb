@@ -6,7 +6,11 @@ module Sidekiq
       include ActiveSupport::Configurable
 
       def self.options
-        Sidekiq[:grouping] || Sidekiq["grouping"] || {} # sidekiq 5.x uses symbols
+        if Sidekiq.respond_to?(:[])
+          Sidekiq[:grouping] || Sidekiq["grouping"] || {}
+        else
+          Sidekiq.options[:grouping] || Sidekiq.options["grouping"] || {}
+        end
       end
 
       # Queue size overflow check polling interval

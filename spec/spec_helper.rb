@@ -17,7 +17,7 @@ end
 require "sidekiq/grouping"
 
 Sidekiq::Grouping.logger = nil
-Sidekiq.redis = { namespace: ENV.fetch("namespace", nil) }
+Sidekiq.redis = { db: ENV.fetch("db", 1) }
 Sidekiq.logger = nil
 
 RSpec::Sidekiq.configure do |config|

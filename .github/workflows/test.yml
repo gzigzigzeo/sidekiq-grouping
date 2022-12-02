@@ -10,7 +10,7 @@ on:
 
 jobs:
   rspec:
-    name: Unit tests
+    name: Rspec
     runs-on: ubuntu-latest
     services:
       redis:
@@ -38,17 +38,13 @@ jobs:
           bundler: 2
           ruby-version: ${{ matrix.ruby_version }}
 
-      - uses: actions/cache@v3
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ matrix.ruby-version }}-${{ hashFiles('./*.gemspec') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
-
+      # Appraisal doesn't support vendored install
+      # See: https://github.com/thoughtbot/appraisal/issues/173
+      #      https://github.com/thoughtbot/appraisal/pull/174
       - name: Bundle install
         run: |
-          bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
+          bundle exec appraisal install
 
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec appraisal rspec
