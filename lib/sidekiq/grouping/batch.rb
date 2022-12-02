@@ -77,7 +77,8 @@ module Sidekiq
       end
 
       def next_execution_time
-        return unless interval == worker_class_options["batch_flush_interval"]
+        interval = worker_class_options["batch_flush_interval"]
+        return unless interval
 
         last_time = last_execution_time
         last_time + interval.seconds if last_time
