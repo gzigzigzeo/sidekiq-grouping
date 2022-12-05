@@ -7,6 +7,7 @@ require "active_support/core_ext/numeric/time"
 require "sidekiq"
 require "sidekiq/grouping/version"
 require "concurrent"
+require "sidekiq/grouping/railtie" if defined?(Rails)
 
 module Sidekiq
   module Grouping
@@ -57,4 +58,3 @@ Sidekiq.configure_server do |config|
   end
 end
 
-Sidekiq::Grouping.start! if Sidekiq.server?
