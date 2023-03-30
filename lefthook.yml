@@ -1,0 +1,20 @@
+---
+# Git hooks configuration
+#
+# See: github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    appraisal:
+      glob: "{Appraisals,*.gemfile}"
+      run: echo {staged_files} > /dev/null; bundle exec appraisal install && git add gemfiles/*.gemfile
+    rubocop:
+      glob: "{*.rb,*.gemspec,Gemfile,Rakefile}"
+      run: bundle exec rubocop -A {staged_files} && git add {staged_files}
+
+pre-push:
+  commands:
+    rspec:
+      glob: "*.rb"
+      run: echo {push_files} > /dev/null; bundle exec appraisal rspec
