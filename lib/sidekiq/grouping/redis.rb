@@ -111,8 +111,8 @@ module Sidekiq
       end
 
       #
-      # The optimized LUA SCRIPT works from Redis >= 6.2.0. Check Redis version used
-      # and return the suitable PLUCK_SCRIPT
+      # The optimized LUA SCRIPT works from Redis >= 6.2.0. Check Redis version
+      # used and return the suitable PLUCK_SCRIPT
       #
       # @return [<Type>] <description>
       #
