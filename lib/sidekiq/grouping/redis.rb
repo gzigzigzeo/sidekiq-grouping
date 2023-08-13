@@ -7,10 +7,19 @@ module Sidekiq
     class Redis
       include RedisDispatcher
 
-      PLUCK_SCRIPT = <<-SCRIPT
+      PLUCK_SCRIPT_GTE_6_2_0 = <<-SCRIPT
         local pluck_values = redis.call('lpop', KEYS[1], ARGV[1]) or {}
         if #pluck_values > 0 then
           redis.call('srem', KEYS[2], unpack(pluck_values))
+        end
+        return pluck_values
+      SCRIPT
+
+      PLUCK_SCRIPT_LT_6_2_0 = <<-SCRIPT
+        local pluck_values = redis.call('lrange', KEYS[1], 0, ARGV[1] - 1)
+        redis.call('ltrim', KEYS[1], ARGV[1], -1)
+        for k, v in pairs(pluck_values) do
+          redis.call('srem', KEYS[2], v)
         end
         return pluck_values
       SCRIPT
@@ -50,7 +59,7 @@ module Sidekiq
         if new_redis_client?
           redis_call(
             :eval,
-            PLUCK_SCRIPT,
+            pluck_script,
             2,
             ns(name),
             unique_messages_key(name),
@@ -59,7 +68,7 @@ module Sidekiq
         else
           keys = [ns(name), unique_messages_key(name)]
           args = [limit]
-          redis_call(:eval, PLUCK_SCRIPT, keys, args)
+          redis_call(:eval, pluck_script, keys, args)
         end
       end
 
@@ -99,6 +108,22 @@ module Sidekiq
 
       def ns(key = nil)
         "batching:#{key}"
+      end
+
+      #
+      # The optimized LUA SCRIPT works from Redis >= 6.2.0. Check Redis version used
+      # and return the suitable PLUCK_SCRIPT
+      #
+      # @return [<Type>] <description>
+      #
+      def pluck_script
+        byebug
+        redis_version = Sidekiq.redis { |conn| conn.info["redis_version"] }
+        if Gem::Version.new(redis_version) >= Gem::Version.new("6.2.0")
+          PLUCK_SCRIPT_GTE_6_2_0
+        else
+          PLUCK_SCRIPT_LT_6_2_0
+        end
       end
     end
   end
