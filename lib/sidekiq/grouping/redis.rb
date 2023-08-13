@@ -112,12 +112,11 @@ module Sidekiq
 
       #
       # The optimized LUA SCRIPT works from Redis >= 6.2.0. Check Redis version used
-      # and return the suitable PLUCK_SCRIPT
+      # and return the suitable PLUCK_SCRIPT
       #
       # @return [<Type>] <description>
       #
       def pluck_script
-        byebug
         redis_version = Sidekiq.redis { |conn| conn.info["redis_version"] }
         if Gem::Version.new(redis_version) >= Gem::Version.new("6.2.0")
           PLUCK_SCRIPT_GTE_6_2_0

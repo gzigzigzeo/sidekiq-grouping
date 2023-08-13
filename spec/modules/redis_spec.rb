@@ -45,19 +45,27 @@ describe Sidekiq::Grouping::Redis do
   describe "#pluck_script" do
     context "when Redis version is" do
       it ">= 6.2.0, selects the corresponding pluck script" do
-        mock_redis_client = Hashie::Mash.new({ info: { "redis_version" => "6.2.0" } })
-        allow_any_instance_of(described_class)
-          .to receive(:redis).and_yield(mock_redis_client)
-        expect(redis_service.pluck_script)
-          .to eq(described_class::PLUCK_SCRIPT_GTE_6_2_0)
+        mock_redis_client = Hashie::Mash.new(
+          info: { "redis_version" => "6.2.0" }
+        )
+        allow_any_instance_of(described_class).to receive(:redis).and_yield(
+          mock_redis_client
+        )
+        expect(redis_service.pluck_script).to eq(
+          described_class::PLUCK_SCRIPT_GTE_6_2_0
+        )
       end
 
       it "< 6.2.0, selects the corresponding pluck script" do
-        mock_redis_client = Hashie::Mash.new({ info: { "redis_version" => "6.0.0" } })
-        allow_any_instance_of(described_class)
-          .to receive(:redis).and_yield(mock_redis_client)
-        expect(redis_service.pluck_script)
-          .to eq(described_class::PLUCK_SCRIPT_LT_6_2_0)
+        mock_redis_client = Hashie::Mash.new(
+          info: { "redis_version" => "6.0.0" }
+        )
+        allow_any_instance_of(described_class).to receive(:redis).and_yield(
+          mock_redis_client
+        )
+        expect(redis_service.pluck_script).to eq(
+          described_class::PLUCK_SCRIPT_LT_6_2_0
+        )
       end
     end
   end
