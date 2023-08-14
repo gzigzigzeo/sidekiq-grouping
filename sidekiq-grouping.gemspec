@@ -31,7 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop-rspec"
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "timecop"
-  spec.add_development_dependency "hashie"
 
   spec.add_dependency "activesupport"
   spec.add_dependency "concurrent-ruby"

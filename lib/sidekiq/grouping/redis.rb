@@ -117,7 +117,9 @@ module Sidekiq
       # @return [<Type>] <description>
       #
       def pluck_script
-        redis_version = Sidekiq.redis { |conn| conn.info["redis_version"] }
+        redis_version = Sidekiq.redis do |conn|
+          conn.info(:server)["redis_version"]
+        end
         if Gem::Version.new(redis_version) >= Gem::Version.new("6.2.0")
           PLUCK_SCRIPT_GTE_6_2_0
         else
