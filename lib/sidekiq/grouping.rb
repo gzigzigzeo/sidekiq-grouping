@@ -55,6 +55,8 @@ Sidekiq.configure_server do |config|
   config.client_middleware do |chain|
     chain.add Sidekiq::Grouping::Middleware
   end
-end
 
-Sidekiq::Grouping.start! if Sidekiq.server?
+  config.on(:startup) do
+    Sidekiq::Grouping.start!
+  end
+end
